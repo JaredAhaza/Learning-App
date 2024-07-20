@@ -1,0 +1,1 @@
+// a container that wraps around the QuizComponent and handles quiz logic

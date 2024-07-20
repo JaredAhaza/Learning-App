@@ -1,0 +1,1 @@
+// a route that renders the BookContentComponent component

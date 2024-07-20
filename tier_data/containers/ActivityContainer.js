@@ -1,0 +1,1 @@
+// a container that wraps around the ActivityComponent and handles activity logic

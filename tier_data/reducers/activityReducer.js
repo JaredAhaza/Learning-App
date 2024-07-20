@@ -1,0 +1,1 @@
+// a reducer that handles activity-related state changes

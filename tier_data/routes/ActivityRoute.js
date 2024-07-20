@@ -1,0 +1,1 @@
+// a route that renders the ActivityContainer component

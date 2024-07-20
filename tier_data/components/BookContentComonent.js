@@ -1,0 +1,1 @@
+// a component that renders book content (e.g., chapter summaries, author bios)

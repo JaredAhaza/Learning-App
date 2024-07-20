@@ -1,0 +1,1 @@
+// a component that renders a flashcard with a question and answer

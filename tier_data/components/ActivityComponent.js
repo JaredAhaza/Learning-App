@@ -1,0 +1,1 @@
+// a component that renders a custom activity (e.g., matching game, word search)

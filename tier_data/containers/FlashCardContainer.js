@@ -1,0 +1,1 @@
+// a container that wraps around the FlashcardComponent and handles flashcard logic
