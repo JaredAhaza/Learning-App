@@ -40,6 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'home',
+    'accounts'
+   # 'django.contrib.sites',
+   # 'allauth',
+   # 'allauth.account',
+   # 'allauth.socialaccount',
+   # 'allauth.socialaccount.providers.google',
+   # 'allauth.socialaccount.providers.facebook',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'Masomo.urls'
@@ -128,3 +136,46 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# SITE_ID = 1
+
+# AUTHENTICATION_BACKENDS = [
+  #  'django.contrib.auth.backends.ModelBackend',
+   # 'allauth.account.auth_backends.AuthenticationBackend',
+# ]
+
+
+# SOCIAL_AUTH_FACEBOOK_KEY = '828745192792948'
+# SOCIAL_AUTH_FACEBOOK_SECRET = '3098759fbdfeaa73bb073a6a3aadcf3f'
+
+# SOCIALACCOUNT_PROVIDERS = {
+  #  'google': {
+   #     'SCOPE': [
+    #        'profile',
+     #       'email',
+      #  ],
+       # 'AUTH_PARAMS': {
+        #    'access_type': 'online',
+       # }
+   # },
+    # 'facebook': {
+      #  'METHOD': 'oauth2',
+       # 'SCOPE': ['email', 'public_profile'],
+       # 'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+      #  'INIT_PARAMS': {'cookie': True},
+      #  'FIELDS': [
+#            'id',
+ #           'first_name',
+  #          'last_name',
+   #         'middle_name',
+    #        'name',
+     #       'name_format',
+      #      'picture',
+       #     'short_name'
+   #     ],
+    #    'EXCHANGE_TOKEN': True,
+     #   'LOCALE_FUNC': 'path.to.callable',
+ #       'VERIFIED_EMAIL': False,
+  #      'VERSION': 'v7.0',
+   # }
+# }
