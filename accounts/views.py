@@ -25,3 +25,11 @@ def student_signup_view(request):
 
 def is_student(user):
     return user.groups.filter(name='STUDENT').exists()
+
+
+def studentregister(request):
+    return render(request, 'accounts/studentregister.html')
+
+
+def studentlogin(request):
+    return render(request, 'accounts/studentlogin.html')
