@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'home',
     'accounts',
-    'widget_tweaks'
+    'widget_tweaks',
+    'dashboard'
    # 'django.contrib.sites',
    # 'allauth',
    # 'allauth.account',
@@ -137,6 +138,8 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_REDIRECT_URL = 'student_dashboard'
 
 # SITE_ID = 1
 

@@ -37,5 +37,5 @@ def studentregister(request):
     return render(request, 'accounts/studentregister.html', {'user_form': user_form, 'student_form': student_form})
 
 
-def studentlogin(request):
-    return render(request, 'accounts/studentlogin.html')
+# def studentlogin(request):
+  #  return render(request, 'accounts/studentlogin.html')
