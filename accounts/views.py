@@ -1,34 +1,40 @@
-from django.shortcuts import render, HttpResponseRedirect
+from django.shortcuts import render, HttpResponseRedirect, redirect
 from django.contrib.auth.models import Group
-from .forms import StudentUserForm, StudentForm
-from .models import Student  # Import Student from your app's models
-
-def student_signup_view(request):
-    userForm = StudentUserForm()
-    StudentForm = StudentForm()
-    mydict = {'userForm': userForm, 'StudentForm': StudentForm}
-    if request.method == 'POST':
-        userForm = StudentUserForm(request.POST)
-        StudentForm = StudentForm(request.POST, request.FILES)
-        if userForm.is_valid() and StudentForm.is_valid():
-            user = userForm.save()
-            user.set_password(user.password)
-            user.save()
-            student = StudentForm.save(commit=False)
-            student.user = user
-            student.save()
-            my_student_group = Group.objects.get_or_create(name='STUDENT')
-            my_student_group[0].user_set.add(user)
-        return HttpResponseRedirect('studentlogin')
-    return render(request, 'student/student_signup.html', context=mydict)
-
+from django.contrib.auth import login, authenticate, logout
+from .forms import *
+from .models import *
+from django.contrib.auth.views import LoginView, LogoutView
+from django.urls import reverse_lazy
 
 def is_student(user):
     return user.groups.filter(name='STUDENT').exists()
 
-
 def studentregister(request):
-    return render(request, 'accounts/studentregister.html')
+    if request.method == 'POST':
+        user_form = StudentUserForm(request.POST)
+        student_form = StudentForm(request.POST)
+        
+        if user_form.is_valid() and student_form.is_valid():
+            user = user_form.save(commit=False)
+            user.set_password(user_form.cleaned_data['password1'])
+            user.save()
+            
+            student = student_form.save(commit=False)
+            student.user = user
+            student.save()
+            group = Group.objects.get(name='STUDENT')
+            user.groups.add(group)
+            
+            return redirect('studentlogin')
+        else:
+            pass
+            # If forms are not valid, pass the forms with errors back to the template
+            
+    else:
+        user_form = StudentUserForm()
+        student_form = StudentForm()
+        
+    return render(request, 'accounts/studentregister.html', {'user_form': user_form, 'student_form': student_form})
 
 
 def studentlogin(request):
