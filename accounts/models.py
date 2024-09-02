@@ -8,11 +8,6 @@ class Student(models.Model):
     user_permissions = models.ManyToManyField(User, related_name='student_permissions')
 
 class StudentProfile(models.Model):
-    Edu_level = (
-        ('Primary', 'PRI'),
-        ('High School', 'HS'),
-        ('University', 'UNI'),
-    )
     Gender = (
         ('Male', 'M'),
         ('Female', 'F'),
@@ -22,7 +17,5 @@ class StudentProfile(models.Model):
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
-    mode_of_learning = models.CharField(max_length=20, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    education_level = models.CharField(choices=Edu_level, max_length=100, blank=True)
     gender = models.CharField(choices=Gender, max_length=20)
