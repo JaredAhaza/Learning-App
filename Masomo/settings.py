@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'home',
     'accounts',
     'widget_tweaks',
-    'dashboard'
+    'dashboard',
+    'coursework'
    # 'django.contrib.sites',
    # 'allauth',
    # 'allauth.account',
