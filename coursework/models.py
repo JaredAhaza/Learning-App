@@ -1,6 +1,6 @@
 # coursework/models.py
 from django.db import models
-from accounts.models import StudentProfile, LessonProgress
+from accounts.models import StudentProfile, Student
 
 class Course(models.Model):
     """Represents a course offered by the college."""
@@ -9,12 +9,15 @@ class Course(models.Model):
     instructions = models.TextField()  # Add a field for course instructions
     duration = models.CharField(max_length=50)  # e.g., "8 weeks"
     created_at = models.DateTimeField(auto_now_add=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+
 
     def __str__(self):
         return self.title
 
     def get_lessons(self):
         """Returns a list of lessons associated with the course."""
+        student_id = self.student_id
         return Lesson.objects.filter(course=self)
     
     def get_completion_percentage(self, student):
@@ -30,6 +33,15 @@ class Course(models.Model):
 
         completion_percentage = (completed_lessons / total_lessons) * 100
         return completion_percentage
+    
+
+class Enrollment(models.Model):
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.student.user.username} - {self.course.title}"
 
 class Lesson(models.Model):
     """Represents a lesson within a course."""
@@ -55,6 +67,17 @@ class Lesson(models.Model):
 
     def __str__(self):
         return self.title
+    
+class LessonProgress(models.Model):
+    """Represents a student's progress on a lesson."""
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    opened = models.BooleanField(default=False)  # Has the student opened the lesson?
+    completed = models.BooleanField(default=False)  # Has the student completed the lesson?
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.student.name} - {self.lesson.title}"
 
 class Topic(models.Model):
     """Represents a short topic within a lesson."""

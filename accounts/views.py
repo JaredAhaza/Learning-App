@@ -15,6 +15,7 @@ def studentregister(request):
         student_form = StudentForm(request.POST)
         
         if user_form.is_valid() and student_form.is_valid():
+            print("Forms are valid!")
             user = user_form.save(commit=False)
             user.set_password(user_form.cleaned_data['password1'])
             user.save()
