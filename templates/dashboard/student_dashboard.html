@@ -34,7 +34,7 @@
                 <span class="material-icons-sharp">grid_view</span>
                 <h3>Examination</h3>
             </a>
-            <a href="#">
+            <a href="/logout">
                 <span class="material-icons-sharp" onclick="">logout</span>
                 <h3>Logout</h3>
             </a>
@@ -53,24 +53,31 @@
             <div class="profile">
                 <div class="top">
                     <div class="profile-photo">
-                        <img src="{% static 'dashboard/images/profile-1.jpg' %}" alt="">
+                        {% if student_profile %}
+                            <img src="{{ student_profile.profile_picture.url }}" alt="">
+                        {% else %}
+                            <img src="{% static 'dashboard/images/profile-1.jpg' %}" alt="">
+                        {% endif %}
                     </div>
                     <div class="info">
-                        <p>Hey, <b>Alex</b> </p>
-                        <small class="text-muted">12102030</small>
+                        <p>Hey, <b>{{ student.user }}</b> </p>
+                        <small class="text-muted">{{ student.student_id }}</small>
                     </div>
                 </div>
+                <a href="{% url 'update_student_profile' %}" class="btn btn-primary" style="margin-bottom: 20px;">Update Your Profile</a>
                 <div class="about">
                     <h5>Course</h5>
                     <p>BTech. Computer Science & Engineering</p>
                     <h5>DOB</h5>
-                    <p>29-Feb-2020</p>
+                    <p>{{ student_profile.date_of_birth }}</p>
                     <h5>Contact</h5>
-                    <p>1234567890</p>
+                    <p>{{ student_profile.phone_number }}</p>
                     <h5>Email</h5>
-                    <p>unknown@gmail.com</p>
-                    <h5>Address</h5>
-                    <p>Ghost town Road, New York, America</p>
+                    <p>{{ student.email }}</p>
+                    <h5>Bio</h5>
+                    <p>{{ student_profile.bio }}</p>
+                    <h5>Gender</h5>
+                    <p>{{ student_profile.gender }}</p>
                 </div>
             </div>
         </aside>

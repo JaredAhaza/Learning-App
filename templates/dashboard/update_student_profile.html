@@ -1,4 +1,5 @@
 {% load static %}
+{% load widget_tweaks %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -33,45 +34,20 @@
         <div class="wrapper wrapper--w780">
             <div class="card card-4 rounded-card">
                 <div class="header">
-                    <h2 class="title-1">Student Registration Form</h2>
+                    <h2 class="title-1">Student Update Profile Form</h2>
                   </div>
                   <br>
                 <div class="card-body">
-                    <form method="POST">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
                         <div class="basic info">
                             <strong><u><h2>Basic Information</h2></u></strong>
                             <br>
                         <div class="row row-space">
                             <div class="col-2">
                                 <div class="input-group">
-                                    <label class="label">First name</label>
-                                    <input class="input--style-4" type="text" name="first_name">
-                                </div>
-                            </div>
-                            <div class="col-2">
-                                <div class="input-group">
-                                    <label class="label">Middle name</label>
-                                    <input class="input--style-4" type="text" name="last_name">
-                                </div>
-                            </div>
-                            <div class="col-2">
-                                <div class="input-group">
-                                    <label class="label">Last name</label>
-                                    <input class="input--style-4" type="text" name="last_name">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row row-space">
-                            <div class="col-2">
-                                <div class="input-group">
-                                    <label class="label">Email</label>
-                                    <input class="input--style-4" type="email" name="email">
-                                </div>
-                            </div>
-                            <div class="col-2">
-                                <div class="input-group">
                                     <label class="label">Phone Number</label>
-                                    <input class="input--style-4" type="text" name="phone">
+                                    {% render_field form.phone_number class+="input--style-4" %}
                                 </div>
                             </div>
                         </div>
@@ -80,7 +56,7 @@
                                 <div class="input-group">
                                     <label class="label">Birthday</label>
                                     <div class="input-group-icon">
-                                        <input class="input--style-4 js-datepicker" type="text" name="birthday">
+                                        {% render_field form.date_of_birth class+="input--style-4 js-datepicker" %}
                                         <i class="zmdi zmdi-calendar-note input-icon js-btn-calendar"></i>
                                     </div>
                                 </div>
@@ -89,29 +65,28 @@
                                 <div class="input-group">
                                     <label class="label">Gender</label>
                                     <div class="p-t-10">
-                                        <label class="radio-container m-r-45">Male
-                                            <input type="radio" checked="checked" name="gender">
+                                        {% for choice in form.gender %}
+                                        <label class="radio-container {% if forloop.counter == 1 %}m-r-45{% endif %}">
+                                            {{ choice.choice_label }}
+                                            {{ choice.tag }}
                                             <span class="checkmark"></span>
                                         </label>
-                                        <label class="radio-container">Female
-                                            <input type="radio" name="gender">
-                                            <span class="checkmark"></span>
-                                        </label>
+                                        {% endfor %}
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="input-group">
                             <label class="label">Profile Picture</label>
-                            <input class="input--style-4" type="file" name="profile_picture" accept="image/*">
-                          </div>
-                          <div class="col-2">
-                            <div class="input-group">
-                              <label class="label">Bio</label>
-                              <textarea class="input--style-5" name="bio"></textarea>
-                            </div>
-                          </div>
+                            {% render_field form.profile_picture class+="form-control-file" %}
                         </div>
+                        <div class="col-2">
+                            <div class="input-group">
+                                <label class="label">Bio</label>
+                                {% render_field form.bio class+="input--style-5" %}
+                            </div>
+                        </div>
+                        <!--
                         <div class="Academic info">
                             <strong><u><h2>Academic Information</h2></u></strong>
                             <br>
@@ -138,7 +113,7 @@
                                 <div class="select-dropdown"></div>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                         <div class="p-t-15">
                             <button class="btn btn--radius-2 btn--blue" type="submit">Submit</button>
                         </div>
