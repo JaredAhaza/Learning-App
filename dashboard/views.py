@@ -5,6 +5,15 @@ from accounts.forms import *
 
 # Create your views here.
 @login_required
+def redirect_to_dashboard(request):
+    if request.user.groups.filter(name='STUDENT').exists():
+        return redirect('student_dashboard')
+    elif request.user.groups.filter(name='TEACHER').exists():
+        return redirect('teacher_dashboard')
+    else:
+        return redirect('home')
+
+@login_required
 def student_dashboard(request):
     try:
         student = Student.objects.get(user=request.user)
@@ -45,3 +54,17 @@ def update_student_profile(request):
             student_profile = StudentProfile(student=student)  # Set the student field here
             form = StudentProfileForm(instance=student_profile)
     return render(request, 'dashboard/update_student_profile.html', {'form': form})
+
+
+@login_required
+def teacher_dashboard(request):
+    try:
+        teacher = Teacher.objects.get(user=request.user)
+        try:
+            teacher_profile = TeacherProfile.objects.get(teacher=teacher)
+        except TeacherProfile.DoesNotExist:
+            teacher_profile = None
+    except Teacher.DoesNotExist:
+        return redirect ('teachersregister')
+    context = {'teacher': teacher, 'teacher_profile': teacher_profile}
+    return render(request, 'dashboard/teacher_dashboard.html', context)

@@ -34,7 +34,7 @@
                 <span class="material-icons-sharp">grid_view</span>
                 <h3>Examination</h3>
             </a>
-            <a href="/student_logout">
+            <a href="/teacher_logout">
                 <span class="material-icons-sharp" onclick="">logout</span>
                 <h3>Logout</h3>
             </a>
@@ -53,15 +53,15 @@
             <div class="profile">
                 <div class="top">
                     <div class="profile-photo">
-                        {% if student_profile %}
+                        {% if teacher_profile %}
                             <img src="{{ student_profile.profile_picture.url }}" alt="">
                         {% else %}
                             <img src="{% static 'dashboard/images/profile-1.jpg' %}" alt="">
                         {% endif %}
                     </div>
                     <div class="info">
-                        <p>Hey, <b>{{ student.user }}</b> </p>
-                        <small class="text-muted">{{ student.student_id }}</small>
+                        <p>Hey, <b>{{ Teacher.user }}</b> </p>
+                        <small class="text-muted">{{ Teacher.student_id }}</small>
                     </div>
                 </div>
                 <a href="{% url 'update_student_profile' %}" class="btn btn-primary" style="margin-bottom: 20px;">Update Your Profile</a>
@@ -69,15 +69,15 @@
                     <h5>Course</h5>
                     <p>BTech. Computer Science & Engineering</p>
                     <h5>DOB</h5>
-                    <p>{{ student_profile.date_of_birth }}</p>
+                    <p>{{ teacher_profile.date_of_birth }}</p>
                     <h5>Contact</h5>
-                    <p>{{ student_profile.phone_number }}</p>
+                    <p>{{ teacher_profile.phone_number }}</p>
                     <h5>Email</h5>
-                    <p>{{ student.email }}</p>
+                    <p>{{ teacher.email }}</p>
                     <h5>Bio</h5>
-                    <p>{{ student_profile.bio }}</p>
+                    <p>{{ teacher_profile.bio }}</p>
                     <h5>Gender</h5>
-                    <p>{{ student_profile.gender }}</p>
+                    <p>{{ teacher_profile.gender }}</p>
                 </div>
             </div>
         </aside>

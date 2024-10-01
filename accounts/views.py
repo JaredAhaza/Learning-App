@@ -38,6 +38,39 @@ def studentregister(request):
         
     return render(request, 'accounts/studentregister.html', {'user_form': user_form, 'student_form': student_form})
 
-def logout_view(request):
+def student_logout_view(request):
     logout(request)
     return HttpResponseRedirect('/studentlogin')
+
+def teachersregister(request):
+    if request.method == 'POST':
+        user_form = TeacherUserForm(request.POST)
+        teacher_form = TeacherForm(request.POST)
+        
+        if user_form.is_valid() and teacher_form.is_valid():
+            print("Forms are valid!")
+            user = user_form.save(commit=False)
+            user.set_password(user_form.cleaned_data['password1'])
+            user.save()
+            
+            teacher = teacher_form.save(commit=False)
+            teacher.user = user
+            teacher.save()
+            group = Group.objects.get(name='TEACHER')
+            user.groups.add(group)
+            
+            return redirect('teacherlogin')
+        else:
+            pass
+            # If forms are not valid, pass the forms with errors back to the template
+            
+    else:
+        user_form = TeacherUserForm()
+        teacher_form = TeacherForm()
+        
+    return render(request, 'accounts/teachersregister.html', {'user_form': user_form, 'teacher_form': teacher_form})
+
+
+def teacher_logout_view(request):
+    logout(request)
+    return HttpResponseRedirect('/teacherlogin')
