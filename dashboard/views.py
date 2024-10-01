@@ -68,3 +68,33 @@ def teacher_dashboard(request):
         return redirect ('teachersregister')
     context = {'teacher': teacher, 'teacher_profile': teacher_profile}
     return render(request, 'dashboard/teacher_dashboard.html', context)
+
+
+@login_required
+def update_teacher_profile(request):
+    try:
+        teacher = Teacher.objects.get(user=request.user)
+    except Teacher.DoesNotExist:
+        return redirect('teachersregister')
+    if request.method == 'POST':
+        try:
+            teacher_profile = TeacherProfile.objects.get(teacher=teacher)
+            form = TeacherProfileForm(request.POST, request.FILES, instance=teacher_profile)
+        except TeacherProfile.DoesNotExist:
+            teacher_profile = TeacherProfile(teacher=teacher)  # Set the teacher field here
+            form = TeacherProfileForm(request.POST, request.FILES, instance=teacher_profile)
+        if form.is_valid():
+            teacher_profile = form.save(commit=False)  # Create a new TeacherProfile instance
+            teacher_profile.teacher = teacher  # Set the student field
+            teacher_profile.save()
+            return redirect('teacher_dashboard')
+        else:
+            pass
+    else:
+        try:
+            teacher_profile = TeacherProfile.objects.get(teacher=teacher)
+            form = TeacherProfileForm(instance=teacher_profile)
+        except TeacherProfile.DoesNotExist:
+            teacher_profile = TeacherProfile(teacher=teacher)  # Set the teacher field here
+            form = TeacherProfileForm(instance=teacher_profile)
+    return render(request, 'dashboard/update_teacher_profile.html', {'form': form})
