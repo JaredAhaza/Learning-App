@@ -1,10 +1,12 @@
 # coursework/admin.py
 from django.contrib import admin
-from .models import Course, Lesson, Topic, TopicProgress, QuizItemProgress, Quiz, Question, Answer, Marks_Of_User
+from .models import *
 
 class CourseAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_at')
     search_fields = ('title',)
+
+
 
 class LessonAdmin(admin.ModelAdmin):
     list_display = ('title', 'course', 'created_at')
@@ -37,7 +39,6 @@ class QuestionAdmin(admin.ModelAdmin):
     
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Answer)
-    
 admin.site.register(Marks_Of_User)
 admin.site.register(Course, CourseAdmin)
 admin.site.register(Lesson, LessonAdmin)

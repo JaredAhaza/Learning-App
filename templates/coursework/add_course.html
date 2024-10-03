@@ -1,0 +1,105 @@
+{% load static %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!---------------------favicon----------------------->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'coursework/favicon/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'coursework/favicon/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'coursework/favicon/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'coursework/favicon/site.webmanifest' %}">
+    <link rel="mask-icon" href="{% static 'coursework/favicon/safari-pinned-tab.svg' %}" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!---------google fonts-------------->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+    <!-----------------------fontawesome--------------------->
+    <link rel="stylesheet" href="{% static 'coursework/fontawesome/css/all.min.css' %}">
+    <!------bootstrap 5 css link-------->
+    <link href="{% static 'coursework/css/bootstrap.min.css' %}" rel="stylesheet" />
+    <!-------css link---------->
+    <link rel="stylesheet" href="{% static 'coursework/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'coursework/css/responsive.css' %}">
+
+
+    <title>To Do</title>
+</head>
+
+<body>
+    <!--------------------------------------side navbar-------------------------------------->
+    <aside class="side-nav" id="side-nav">
+        <div class="logo">
+            <a href="/teacher_dashboard">
+                <img id="logo-img" src="{% static 'coursework/images/logo.png' %}">
+                <h2 class=" d-md-block" id="logo-head">Add<br> Course</h2>
+            </a>
+            <i class="fa-solid fa-bars fa-2x d-block d-md-none mt-4" id="togg-close" onclick="toggle()"></i>
+        </div>
+    </aside>
+    <!-----------------------------------host------------------------------------------>
+    <div class="host">
+        <!------------------------------top bar---------------------------------->
+        <div class="top-bar" id="top-bar">
+            <div class="row">
+                <div class="col-8"></div>
+                <div class="col-4">
+                    <i class="fa-solid fa-bars fa-2x d-block ms-auto d-md-none" id="togg-open" onclick="toggle()"></i>
+                </div>
+            </div>
+        </div>
+        <!--------------------------Add course--------------------------------->
+        <div class="todo-main">
+            <h1 class="text-center my-5"><u>Add Course</u></h1>
+            <div class="form">
+                <div class="row">
+                    <div class="col-12 col-md-8 mx-auto">
+                        <form method="POST" class="register-form" id="register-form">
+                            {% csrf_token %}
+            
+                            <!-- Title field -->
+                            <input type="text" name="{{ course_form.title.name }}" id="title" 
+                                   placeholder="Title..." 
+                                   value="{{ course_form.title.value|default:'' }}" required>
+            
+                            <!-- Description field -->
+                            <input type="text" name="{{ course_form.description.name }}" id="description" 
+                                   placeholder="Description..." 
+                                   value="{{ course_form.description.value|default:'' }}" required>
+            
+                            <!-- Instruction fields -->
+                            <input type="text" name="{{ course_form.instructions.name }}" id="instruction" 
+                            placeholder="Instruction..." 
+                            value="{{ course_form.instructions.value|default:'' }}" required>
+            
+                            <!-- Duration field -->
+                            <input type="number" name="{{ course_form.duration.name }}" id="duration" 
+                                   placeholder="Duration..." 
+                                   value="{{ course_form.duration.value|default:'' }}" required>
+            
+                            <!-- Submit button -->
+                            <button type="submit" id="btn" class="form-submit">Add</button>
+            
+                            <ul id="todolist"></ul>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+        
+            <center> <button class="Delete-all">Delete All</button> </center>
+        </div>
+        <!-- </section> -->
+    </div>
+    <!------bootstrap js link------->
+    <script src="{% static 'coursework/js/bootstrap.bundle.min.js' %}"></script>
+    <!------------custom js---------------->
+    <script src="{% static 'coursework/js/custom_js.js' %}"></script>
+</body>
+
+</html>

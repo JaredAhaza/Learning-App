@@ -6,10 +6,10 @@ class Course(models.Model):
     """Represents a course offered by the college."""
     title = models.CharField(max_length=255)
     description = models.TextField()
-    instructions = models.TextField()  # Add a field for course instructions
+    instructions = models.TextField()
     duration = models.CharField(max_length=50)  # e.g., "8 weeks"
     created_at = models.DateTimeField(auto_now_add=True)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.ManyToManyField('accounts.Student')
 
 
     def __str__(self):
@@ -32,8 +32,7 @@ class Course(models.Model):
                 completed_lessons += 1
 
         completion_percentage = (completed_lessons / total_lessons) * 100
-        return completion_percentage
-    
+        return completion_percentage  
 
 class Enrollment(models.Model):
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)

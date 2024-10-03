@@ -1,0 +1,88 @@
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
+
+@media screen and (min-width: 1200px) and (max-width:1599px) {
+    .course-main {
+        /* padding-bottom: 20px !important; */
+    }
+}
+
+@media screen and (min-width: 320px) and (max-width: 577px) {
+
+    #todolist .btn-host .edit,
+    #todolist .btn-host .delete {
+        font-size: 0;
+    }
+
+    #todolist .btn-host .edit:after,
+    #todolist .btn-host .delete:after {
+        content: '\f304';
+        font-family: 'FontAwesome';
+        font-size: 12px;
+    }
+
+    #todolist .btn-host .delete:after {
+        content: '\f1f8';
+    }
+    .logo img{
+        width: 90%;
+    }
+    .side-nav{
+        transition: all 0.75s ease-in-out;
+    }
+    .top-bar{
+        transition: all 0.75s ease-in-out;   
+    }
+    nav{
+        padding: 45px 0px 0px 0px;
+    }
+    nav li{
+    border-radius: 50px;
+    width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+    }
+}
+
+@media screen and (min-width: 320px) and (max-width: 750px) {
+    .btn-host {
+        width: 30%;
+    }
+}
+
+/*------------------------------------i pad ----------------------------------*/
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+    .top-bar {
+        height: 80px;
+    }
+
+    .side-nav {
+        width: 23%;
+    }
+
+    .host {
+        width: 77%;
+        margin-left: 23%;
+    }
+
+    nav li {
+        font-size: 14px;
+    }
+
+    .course-main {
+        padding: 10px 0px 0px 10px;
+        margin-top: 80px;
+    }
+
+    .course .mid h4 {
+        font-size: 19px;
+    }
+
+    .course .bottom i {
+        font-size: 25px;
+        margin-top: 5px;
+    }
+
+    .course .bottom span {
+        font-size: 14px;
+    }
+}
