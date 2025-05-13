@@ -1,0 +1,484 @@
+*{
+    margin: 0px;
+    padding: 0px;
+}
+:root{
+    --dark-gray:#2f3542;
+    --silver: #a4b0be;
+    --purple: #420766;
+    --orange: #ea9000; 
+    --silver-2: #d2dae2;
+    --forborder: rgb(95, 95, 95);
+
+
+    --font-pinyon: 'Pinyon Script',cursive;
+}
+body{
+    display: flex;
+    background-color: var(--silver-2);
+    color: black;
+    /* border: 4px solid rgb(16, 175, 238); */
+}
+/*---------------------------------aside(side nav)--------------------------------------*/
+
+.logo{
+    width: 100%;
+    text-align: center;
+    margin-top: 30px;
+    background-color: var(--dark-gray);
+}
+.logo a{
+    text-decoration: none;
+}
+#logo-head{
+    display: none;
+}
+.logo img{
+    /* max-height: 120px; */
+    /* max-width: 180px;    */
+    width: 70%;
+}
+.logo h2{
+    font-family: 'Great Vibes', cursive;
+    font-size: 28px;
+    letter-spacing: 2px;
+    margin: 10px 12px 0px 0px;
+    color: var(--orange);
+}
+.side-nav{
+    background-color: var(--dark-gray);
+    width: 16%;
+    min-width: 70px !important;
+    padding-bottom: 100%;
+    height: 100vh;
+    position: fixed;
+    /* border: 4px solid black; */
+}
+#togg-open{
+    color: var(--silver-2);
+    margin: 20px 200px 0px 0px;
+}
+#togg-close{
+    display: none;
+    color: var(--silver-2);
+    /* margin-top: 20px; */
+    font-size: 0;
+}
+#navbar{
+    display: none;
+}
+nav{
+    padding: 55px 0px 0px 19px;
+}
+
+nav li{
+    list-style: none;
+    background-color: var(--silver-2);
+    margin-top: 10px;
+    padding:10px ;
+    font-weight: bold;
+    border-radius: 50px 0px 0px 50px ;
+}
+nav li a{
+    text-decoration: none;
+    color: var(--purple) ;
+}
+nav li:hover{
+    background-color: var(--purple);
+}
+nav li:hover a{
+    color: white;
+}
+nav li:hover i{
+    color: var(--orange);
+}
+nav li i{
+    color:  black;
+}
+/*-------------------------------------main host------------------------------------*/
+.host{
+    width: 84%;
+    margin-left: 16%;
+}
+/*---------------------------------------topbar----------------------------------------*/
+.top-bar{
+    height: 70px;
+    width: 100%;
+    background-color: var(--dark-gray) ;
+    position: fixed !important;
+    overflow: hidden !important;
+}
+/*----------------------------------course main ------------------------------------- */
+.course-main{
+    width: 100%;
+    /* height: 100vh; */
+    margin-top: 70px;
+    color: black;
+    /* border: 4px solid red; */
+    padding: 20px !important;
+
+}
+.course{
+    width: 90% !important;
+    height: 320px;
+    width: 100%;
+    border: 1px solid var(--forborder);
+    border-radius: 10px;
+    transition: all 0.5s ease-in-out;
+    overflow: hidden !important;
+    
+}
+.course:hover{
+    overflow: hidden !important;
+}
+.pic{
+    height: 140px;
+    border-radius: 10px 10px 0px 0px ;
+    overflow: hidden;
+}
+.pic img{
+    border-radius: 10px 10px 0px 0px ;
+}
+.course:hover img{
+    transform: scale(1.1);
+}
+.course:hover{
+    transform: scale(1.05);
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+}
+.mid{
+    height: 130px;
+    padding: 10px 0px 0px 10px;
+}
+.bottom{
+    border-top: 1px solid var(--forborder);
+    padding: 6px 10px 0px 20px ;
+}
+.bottom a{
+    text-decoration: none;
+}
+.bottom i{
+    color: black;
+}
+.bottom a:hover i{
+    color: var(--orange);
+}
+.bottom span:hover{
+    color: black;
+}
+.bottom span{
+    color: var(--purple);
+    font-weight: bold;
+}
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-------------------------------------------------------to do list-----------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+.todo-main{
+    width: 100%;
+    margin-top: 70px;
+    color: black;
+    padding: 20px !important;
+}   
+.todo-main input{
+    padding-left: 10px;
+}
+.todo-main h1{
+    color: var(--purple);
+}
+button{
+    cursor: pointer;
+}
+.form {
+    margin: 0px auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+.form:after {
+    content: "";
+    clear: both;
+    display: table;
+}
+.todo-main input[type = "search"]{
+    background-color: var(--silver);
+    height: 43px;
+    float: right;
+    border: 2px solid white;
+
+}
+.todo-main input[type = "search"]::placeholder{
+    color: black;
+}
+.serbtn{
+    height: 43px;
+    width: 20%;
+    background-color: black;
+    color: var(--orange);
+    font-weight: bold;
+    float: right;
+}
+.serbtn:hover{
+    border: 3px inset black;
+    background-color: var(--silver);
+    color: var(--dark-gray);
+}
+
+.form input,
+#btn {
+    height: 43px;
+}
+.form input[type="text"] {
+    width: 80%;
+    float: left;
+    margin-top: 39px;
+    margin-bottom: 30px;
+    border:  none;
+    background-color: var(--silver);
+    border: 2px solid white;
+    border-right: none;
+}
+.form input[type="text"]::placeholder{
+    color: black;
+}
+#btn {
+    width: 20%;
+    border: none;
+    background-color: var(--dark-gray);
+    color: var(--orange);
+    font-weight: bold;
+    float: right;
+    margin-top: 39px;
+    border: 2px solid white;
+    border-left: none;
+}
+#btn:hover{
+    background-color: black;
+    border: 3px inset var(--orange);
+}
+#todolist {
+    padding-top: 30px !important;
+    margin: 20px auto;
+    list-style: none;
+}
+ol, ul {
+    padding-left: unset !important;
+}
+#todolist li {
+    border: 2px solid white;
+    background-color: var(--silver);
+    display: flex;
+    align-items: center;
+    width: 100% ;
+    padding-left: 10px;
+}
+#todolist li::placeholder{
+    color: black;
+}
+.btn-host {
+    display: flex;
+    margin-left: auto;
+    width: 20%;
+}
+
+.edit {
+    height: 38px;
+    width: 95px;
+    background-color: var(--dark-gray);
+    border: none;
+    color:  var(--orange);
+    font-weight: bold;
+}
+.edit:hover{
+    background-color: black;
+    border: 3px inset var(--orange);
+}
+.delete {
+    height: 38px;
+    width: 95px;
+    background-color: black;
+    border: none;
+    color: var(--orange);
+    font-weight: bold;
+}
+.delete:hover{
+    border: 3px inset black;
+    background-color: var(--silver);
+    color: var(--dark-gray);
+}
+.Delete-all {
+    width: 15%;
+    min-width: 90px;
+    height: 43px;
+    border:2px solid white;
+    background-color: black;
+    box-sizing: border-box;
+    color: var(--orange);
+    font-weight: bold;
+    margin-top: 39px;
+}
+.Delete-all:hover{
+    border: 3px inset black;
+    background-color: var(--silver);
+    color: var(--dark-gray);
+}
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+------------------------------------------------Register More Form -----------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
+.register-main{
+    width: 100%;
+    margin-top: 70px;
+    color: black;
+    padding: 20px !important;
+}
+.register-main h1{
+    color: var(--purple);
+    padding: 42px;
+}
+.form-host{
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%;
+}
+.p-md-3 {
+    padding: unset !important;
+}
+form input{
+    padding: 0px 10px 0px 10px ;
+}
+form input[type = text],[type = date],[type = address]{
+    width: 100%;
+    height: 43px;
+    border-radius: 5px;
+    border: none;
+    background-color: var(--silver);
+    color: black;
+    padding: 0px 10px 0px 10px;
+}
+form input[type = address]{
+    margin-left: 12px;
+}
+.hh{
+    border: 2px solid yellowgreen;
+}
+.gender-host{
+    display: flex;
+    justify-content: center;
+}
+form{
+    color: black;   
+}
+form input::placeholder{
+    color: black;
+}
+#inpProvince,#inpCourse{
+    width: 100%;
+    height: 43px;
+    padding: 0px 10px 0px 10px !important;
+    border-radius: 5px;
+    border: none;
+    background-color: var(--silver);
+    color: black;
+}
+.btn{
+    /* padding: 10px 50px 10px 50px ; */
+    height: 43px;
+    width: 150px;
+    border: 2px solid white;
+    color: var(--orange);
+    font-weight:bold;
+    background-color: black;
+    border-radius: unset;
+}
+.btn:hover{
+    color: var(--dark-gray) !important;
+    background-color: var(--silver);
+    border: 3px solid black;
+}
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+------------------------------------------------Enrolled Students -----------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+ h1 {
+    color: var(--purple);
+    padding: 10px;
+}
+.tb-host{
+    width: 100%;
+    margin-top: 70px;
+    color: black;
+    padding: 20px !important;
+}
+.tb-host table{
+    overflow: hiden;
+}
+.tb-host input[type = search]{
+    height: 45px;
+    width: 100%;
+    border-radius: 5px;
+    border: none;
+    background-color: var(--silver);
+    color: white;
+    padding: 0px 10px 0px 10px ;
+    /* margin-left: 20%; */
+}
+table{
+    border: 2px solid black;
+    width: 90%;
+    margin: 0 auto;
+    margin-top: 50px;
+    color: var(--purple);
+}
+table th{
+    background-color: var(--silver);
+}
+table td{
+    /* background-color: white; */
+}
+table th,td{
+    border: 2px solid black;
+    padding: 5px 10px 5px 10px ;
+}
+#data-host .btn-host{
+    display: flex;
+    justify-content: space-around;
+    background: transparent ;
+    width: 100%;
+    border: none;
+}
+#edit, #delete{
+    height: 40px;
+    width: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#edit{
+    background-color: black;
+    color: var(--orange);
+    font-weight: bold;
+    border:2px solid white;
+    text-decoration: none;
+}
+#delete{
+    background-color: rgb(206, 53, 53);
+    color: white;
+    margin-left: 4px;
+    border:2px solid white
+
+}
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+--------------------------------------------------------Attendance -----------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
+.attendance-main{
+    width: 100%;
+    /* height: 100vh; */
+    margin-top: 70px;
+    color: black;
+    /* border: 4px solid red; */
+    padding: 20px !important;
+
+}
+
+#togg-open.fa-xmark::before{
+    content: '\f00d';
+}

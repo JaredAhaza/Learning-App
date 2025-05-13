@@ -1,0 +1,109 @@
+{% load static %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Course</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .register-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        textarea {
+            resize: none;
+            min-height: 80px;
+        }
+        #instructions {
+            font-family: monospace;
+        }
+        .char-count {
+            font-size: 12px;
+            color: gray;
+            text-align: right;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <form method="POST" class="register-form" id="register-form">
+        {% csrf_token %}
+
+        <h2>Add a New Course</h2>
+
+        <!-- Title field -->
+        <input type="text" name="{{ course_form.title.name }}" id="title" 
+               placeholder="Course Title..." 
+               value="{{ course_form.title.value|default:'' }}" required>
+        
+        <!-- Description field -->
+        <textarea name="{{ course_form.description.name }}" id="description" 
+                  placeholder="Course Description..." oninput="adjustHeight(this)" required></textarea>
+        <div class="char-count" id="desc-count">0 / 500</div>
+        
+        <!-- Instruction fields (point-form format) -->
+        <textarea name="{{ course_form.instructions.name }}" id="instructions" 
+                  placeholder="Instructions (use bullet points)..."
+                  oninput="enforceBulletPoints(this)"></textarea>
+
+        <!-- Duration field -->
+        <input type="number" name="{{ course_form.duration.name }}" id="duration" 
+               placeholder="Course Duration (in weeks)..." 
+               value="{{ course_form.duration.value|default:'' }}" required>
+
+        <!-- Submit button -->
+        <button type="submit" id="btn" class="form-submit">Add Course</button>
+    </form>
+
+    <script>
+        function adjustHeight(el) {
+            el.style.height = "auto";
+            el.style.height = (el.scrollHeight) + "px";
+            document.getElementById('desc-count').innerText = el.value.length + " / 500";
+        }
+
+        function enforceBulletPoints(el) {
+            let lines = el.value.split("\n");
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].trim() !== "" && !lines[i].startsWith("- ")) {
+                    lines[i] = "- " + lines[i].trim();
+                }
+            }
+            el.value = lines.join("\n");
+        }
+    </script>
+
+</body>
+</html>
