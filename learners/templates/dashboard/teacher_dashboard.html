@@ -58,17 +58,19 @@
                 <div class="top">
                     <div class="profile-photo">
                         {% if teacher_profile %}
-                            <img src="{{ student_profile.profile_picture.url }}" alt="">
+                            <img src="{{ teacher_profile.profile_picture.url }}" alt="">
                         {% else %}
                             <img src="{% static 'dashboard/images/profile-1.jpg' %}" alt="">
                         {% endif %}
                     </div>
                     <div class="info">
-                        <p>Hey, <b>{{ Teacher.user }}</b> </p>
-                        <small class="text-muted">{{ Teacher.student_id }}</small>
+                        <p>Hey, <b>{{ teacher.user }}</b> </p>
+                        <small class="text-muted">{{ teacher.student_id }}</small>
                     </div>
                 </div>
-                <a href="{% url 'update_student_profile' %}" class="btn btn-primary" style="margin-bottom: 20px;">Update Your Profile</a>
+                    <a href="http:/update_teacher_profile" style="display: block; width: 100%; background-color: #dc3545;
+                     color: white; padding: 10px 16px; border-radius: 5px; text-align: center; text-decoration: none;
+                     margin-bottom: 16px;">Update Your Profile</a>
                 <div class="about">
                     <h5>Course</h5>
                     <p>BTech. Computer Science & Engineering</p>

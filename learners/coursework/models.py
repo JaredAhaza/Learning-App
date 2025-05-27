@@ -4,24 +4,24 @@ from accounts.models import StudentProfile, Student
 from tinymce.models import HTMLField
 
 class Course(models.Model):
-    title = models.CharField(max_length=255)
-    description = HTMLField()
-    instructions = HTMLField()
-    duration = models.CharField(max_length=50)
-    created_at = models.DateTimeField(auto_now_add=True)
+    course_id = models.CharField(max_length=10, primary_key=True)
+    course_name = models.CharField(max_length=255)
+    course_code = models.CharField(max_length=20, unique=True)
+    description = models.TextField(blank=True, null=True)
+    credits = models.PositiveIntegerField()  # or use hours = models.PositiveIntegerField()
 
     def __str__(self):
-        return self.title
+        return f"{self.course_name} ({self.course_code})"
 
 class Cohort(models.Model):
-    name = models.CharField(max_length=255)  # e.g., "Jan 2025 Intake"
-    courses = models.ManyToManyField(Course, related_name='cohorts')
+    cohort_id = models.CharField(max_length=10, primary_key=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='cohorts')
+    name = models.CharField(max_length=255)
     start_date = models.DateField()
     end_date = models.DateField()
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.course.course_code})"
 
     def students(self):
         """Return all students enrolled in this cohort."""
@@ -168,3 +168,15 @@ class QuizItemProgress(models.Model):
 
     def __str__(self):
         return f"{self.student.name} - {self.quiz_item.topic.title} - {self.quiz_item.question}"
+
+class Unit(models.Model):
+    unit_id = models.CharField(max_length=10, primary_key=True)
+    cohort = models.ForeignKey(Cohort, on_delete=models.CASCADE, related_name='units')
+    unit_name = models.CharField(max_length=255)
+    unit_code = models.CharField(max_length=20, unique=True)
+    description = models.TextField(blank=True, null=True)
+    learning_outcomes = models.TextField(blank=True, null=True)
+    teacher = models.ForeignKey('accounts.Teacher', on_delete=models.SET_NULL, null=True, related_name='units')
+
+    def __str__(self):
+        return f"{self.unit_name} ({self.unit_code})"

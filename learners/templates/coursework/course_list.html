@@ -89,10 +89,9 @@
         <tbody>
             {% for course in courses %}
             <tr>
-                <td>{{ course.title }}</td>
+                <td>{{ course.course_name }}</td>
                 <td>{{ course.description }}</td>
-                <td>{{ course.instructions }}</td>
-                <td>{{ course.duration }}</td>
+                <td>{{ course.course_code }}</td>
             </tr>
             {% endfor %}
         </tbody>

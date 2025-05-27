@@ -4,8 +4,8 @@ from tinymce.widgets import TinyMCE
 from .models import *
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('title', 'created_at')
-    search_fields = ('title',)
+    list_display = ('course_name', 'course_code')
+    search_fields = ('course_name', 'course_code')
 
     formfield_overrides = {
         models.TextField: {'widget': TinyMCE()}
@@ -43,8 +43,8 @@ class QuestionAdmin(admin.ModelAdmin):
     inlines = [AnswerInLine]
 
 class CohortAdmin(admin.ModelAdmin):
-    list_display = ('name', 'created_at', 'start_date', 'end_date')
-    search_fields = ('name', 'courses')
+    list_display = ('name', 'course')
+    search_fields = ('name', 'course')
 
 class EnrollmentAdmin(admin.ModelAdmin):
     list_display = ('student', 'cohort', 'status')

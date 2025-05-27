@@ -1,12 +1,12 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group, Permission
 import uuid
 
 class Student(models.Model):
     email = models.EmailField(unique=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student')
-    groups = models.ManyToManyField(User, related_name='student_groups')
-    user_permissions = models.ManyToManyField(User, related_name='student_permissions')
+    groups = models.ManyToManyField(Group, related_name='student_groups')
+    user_permissions = models.ManyToManyField(Permission, related_name='student_permissions')
     student_id = models.CharField(max_length=3, primary_key=True)
 
     def save(self, *args, **kwargs):
@@ -42,8 +42,8 @@ class StudentProfile(models.Model):
 class Teacher(models.Model):
     email = models.EmailField(unique=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='teacher')
-    groups = models.ManyToManyField(User, related_name='teacher_groups')
-    user_permissions = models.ManyToManyField(User, related_name='teacher_permissions')
+    groups = models.ManyToManyField(Group, related_name='teacher_groups')
+    user_permissions = models.ManyToManyField(Permission, related_name='teacher_permissions')
     teacher_id = models.CharField(max_length=3, primary_key=True)
 
     def save(self, *args, **kwargs):
