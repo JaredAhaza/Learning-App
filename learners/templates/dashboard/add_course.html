@@ -1,0 +1,190 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Course</title>
+    <link rel="shortcut icon" href="{% static 'dashboard/images/logo.png' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'dashboard/style.css' %}">
+</head>
+<body>
+    <header>
+        <div class="logo" title="University Management System">
+            <img src="{% static 'dashboard/images/logo.png' %}" alt="">
+            <h2>U<span class="danger">M</span>S</h2>
+        </div>
+        <div class="navbar">
+            <a href="{% url 'teacher_dashboard' %}">
+                <span class="material-icons-sharp">home</span>
+                <h3>Dashboard</h3>
+            </a>
+            <a href="{% url 'teacher_courses' %}">
+                <span class="material-icons-sharp">menu_book</span>
+                <h3>Courses</h3>
+            </a>
+            <a href="exam.html">
+                <span class="material-icons-sharp">grid_view</span>
+                <h3>Examination</h3>
+            </a>
+            <a href="{% url 'teacher_logout' %}">
+                <span class="material-icons-sharp">logout</span>
+                <h3>Logout</h3>
+            </a>
+        </div>
+        <div id="profile-btn">
+            <span class="material-icons-sharp">person</span>
+        </div>
+        <div class="theme-toggler">
+            <span class="material-icons-sharp active">light_mode</span>
+            <span class="material-icons-sharp">dark_mode</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside>
+            <div class="profile">
+                <div class="top">
+                    <div class="profile-photo">
+                        {% if teacher_profile %}
+                            <img src="{{ teacher_profile.profile_picture.url }}" alt="">
+                        {% else %}
+                            <img src="{% static 'dashboard/images/profile-1.jpg' %}" alt="">
+                        {% endif %}
+                    </div>
+                    <div class="info">
+                        <p>Hey, <b>{{ teacher.user.get_full_name }}</b></p>
+                        <small class="text-muted">{{ teacher.teacher_id }}</small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main>
+            <h1>Add New Course Content</h1>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <div class="forms-grid">
+                <!-- Add Course Form -->
+                <div class="form-section">
+                    <div class="form-header">
+                        <span class="material-icons-sharp">school</span>
+                        <h2>Add New Course</h2>
+                    </div>
+                    <form method="POST" class="form-content">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="course">
+                        {% for field in course_form %}
+                            <p>
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <ul class="errorlist">
+                                        {% for error in field.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </p>
+                        {% endfor %}
+                        <button type="submit" class="btn-primary">
+                            <span class="material-icons-sharp">add</span>
+                            Add Course
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Add Cohort Form -->
+                <div class="form-section">
+                    <div class="form-header">
+                        <span class="material-icons-sharp">groups</span>
+                        <h2>Add New Cohort</h2>
+                    </div>
+                    <form method="POST" class="form-content">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="cohort">
+                        {% for field in cohort_form %}
+                            <p>
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <ul class="errorlist">
+                                        {% for error in field.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </p>
+                        {% endfor %}
+                        <button type="submit" class="btn-primary">
+                            <span class="material-icons-sharp">add</span>
+                            Add Cohort
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Add Unit Form -->
+                <div class="form-section">
+                    <div class="form-header">
+                        <span class="material-icons-sharp">menu_book</span>
+                        <h2>Add New Unit</h2>
+                    </div>
+                    <form method="POST" class="form-content">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="unit">
+                        {% for field in unit_form %}
+                            <p>
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <ul class="errorlist">
+                                        {% for error in field.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </p>
+                        {% endfor %}
+                        <button type="submit" class="btn-primary">
+                            <span class="material-icons-sharp">add</span>
+                            Add Unit
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <div class="right">
+            <div class="announcements">
+                <h2>Announcements</h2>
+                <div class="updates">
+                    <div class="message">
+                        <p><b>Academic</b> Summer training internship with Live Projects.</p>
+                        <small class="text-muted">2 Minutes Ago</small>
+                    </div>
+                    <div class="message">
+                        <p><b>Co-curricular</b> Global internship opportunity by Student organization.</p>
+                        <small class="text-muted">10 Minutes Ago</small>
+                    </div>
+                    <div class="message">
+                        <p><b>Examination</b> Instructions for Mid Term Examination.</p>
+                        <small class="text-muted">Yesterday</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'dashboard/app.js' %}"></script>
+</body>
+</html> 

@@ -1,0 +1,146 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Courses</title>
+    <link rel="shortcut icon" href="{% static 'dashboard/images/logo.png' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'dashboard/style.css' %}">
+</head>
+<body>
+    <header>
+        <div class="logo" title="University Management System">
+            <img src="{% static 'dashboard/images/logo.png' %}" alt="">
+            <h2>U<span class="danger">M</span>S</h2>
+        </div>
+        <div class="navbar">
+            <a href="{% url 'teacher_dashboard' %}">
+                <span class="material-icons-sharp">home</span>
+                <h3>Dashboard</h3>
+            </a>
+            <a href="/add_course">
+                <span class="material-icons-sharp">add_circle</span>
+                <h3>Add Course</h3>
+            </a>
+             
+            <a href="exam.html">
+                <span class="material-icons-sharp">grid_view</span>
+                <h3>Examination</h3>
+            </a>
+            <a href="{% url 'update_teacher_profile' %}">
+                <span class="material-icons-sharp">person</span>
+                <h3>Update Profile</h3>
+            </a>
+            <a href="{% url 'teacher_logout' %}">
+                <span class="material-icons-sharp">logout</span>
+                <h3>Logout</h3>
+            </a>
+        </div>
+        <div id="profile-btn">
+            <span class="material-icons-sharp">person</span>
+        </div>
+        <div class="theme-toggler">
+            <span class="material-icons-sharp active">light_mode</span>
+            <span class="material-icons-sharp">dark_mode</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside>
+            <div class="profile">
+                <div class="top">
+                    <div class="profile-photo">
+                        {% if teacher_profile %}
+                            <img src="{{ teacher_profile.profile_picture.url }}" alt="">
+                        {% else %}
+                            <img src="{% static 'dashboard/images/profile-1.jpg' %}" alt="">
+                        {% endif %}
+                    </div>
+                    <div class="info">
+                        <p>Hey, <b>{{ teacher.user.get_full_name }}</b></p>
+                        <small class="text-muted">{{ teacher.teacher_id }}</small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main>
+            <h1>Your Courses and Units</h1>
+            
+            {% if courses_data %}
+                {% for course_id, course_info in courses_data.items %}
+                    <div class="course-section">
+                        <div class="course-header">
+                            <span class="material-icons-sharp">school</span>
+                            <h2>{{ course_info.course.course_name }}</h2>
+                            <span class="course-code">{{ course_info.course.course_code }}</span>
+                            <a href="{% url 'edit_course' course_info.course.course_id %}" class="btn-edit">
+                                <span class="material-icons-sharp">edit</span>
+                            </a>
+                        </div>
+                        
+                        {% for cohort_id, cohort_info in course_info.cohorts.items %}
+                            <div class="cohort-section">
+                                <div class="cohort-header">
+                                    <span class="material-icons-sharp">groups</span>
+                                    <h3>{{ cohort_info.cohort.name }}</h3>
+                                    <span class="cohort-dates">
+                                        {{ cohort_info.cohort.start_date|date:"M d, Y" }} - {{ cohort_info.cohort.end_date|date:"M d, Y" }}
+                                    </span>
+                                    <a href="{% url 'edit_cohort' cohort_info.cohort.cohort_id %}" class="btn-edit">
+                                        <span class="material-icons-sharp">edit</span>
+                                    </a>
+                                </div>
+                                
+                                <div class="units-grid">
+                                    {% for unit in cohort_info.units %}
+                                        <div class="unit-card">
+                                            <span class="material-icons-sharp">menu_book</span>
+                                            <h4>{{ unit.unit_name }}</h4>
+                                            <div class="unit-code">{{ unit.unit_code }}</div>
+                                            <p class="unit-description">{{ unit.description }}</p>
+                                            <a href="{% url 'edit_unit' unit.unit_id %}" class="btn-edit">
+                                                <span class="material-icons-sharp">edit</span>
+                                            </a>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-data">
+                    <p>No courses or units have been assigned to you yet.</p>
+                </div>
+            {% endif %}
+        </main>
+
+        <div class="right">
+            <div class="announcements">
+                <h2>Announcements</h2>
+                <div class="updates">
+                    <div class="message">
+                        <p><b>Academic</b> Summer training internship with Live Projects.</p>
+                        <small class="text-muted">2 Minutes Ago</small>
+                    </div>
+                    <div class="message">
+                        <p><b>Co-curricular</b> Global internship opportunity by Student organization.</p>
+                        <small class="text-muted">10 Minutes Ago</small>
+                    </div>
+                    <div class="message">
+                        <p><b>Examination</b> Instructions for Mid Term Examination.</p>
+                        <small class="text-muted">Yesterday</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'dashboard/app.js' %}"></script>
+</body>
+</html> 

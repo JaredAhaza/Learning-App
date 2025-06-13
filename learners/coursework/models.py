@@ -7,7 +7,8 @@ class Course(models.Model):
     course_id = models.CharField(max_length=10, primary_key=True)
     course_name = models.CharField(max_length=255)
     course_code = models.CharField(max_length=20, unique=True)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True, max_length=500)
+    instructions = models.TextField(blank=True, null=True, max_length=500)
     credits = models.PositiveIntegerField()  # or use hours = models.PositiveIntegerField()
 
     def __str__(self):

@@ -385,9 +385,381 @@ main .timetable.active .closeBtn{
 }
 .right .leaves .teacher:hover{box-shadow: none;}
 
+/* Courses Page Styles */
+.course-section {
+    background-color: var(--color-white);
+    padding: var(--card-padding);
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 1.5rem;
+}
 
+.course-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-light);
+}
 
+.course-header span {
+    background-color: var(--color-primary);
+    padding: 0.8rem;
+    border-radius: 50%;
+    color: var(--color-white);
+    font-size: 1.5rem;
+}
 
+.course-header h2 {
+    margin: 0;
+    color: var(--color-dark);
+}
+
+.course-code {
+    margin-left: auto;
+    color: var(--color-dark-variant);
+    font-weight: 500;
+}
+
+.cohort-section {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background-color: var(--color-background);
+    border-radius: var(--border-radius-1);
+}
+
+.cohort-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.cohort-header span {
+    background-color: var(--color-success);
+    padding: 0.6rem;
+    border-radius: 50%;
+    color: var(--color-white);
+    font-size: 1.2rem;
+}
+
+.cohort-header h3 {
+    margin: 0;
+    color: var(--color-dark);
+}
+
+.cohort-dates {
+    margin-left: auto;
+    color: var(--color-dark-variant);
+    font-size: 0.9rem;
+}
+
+.units-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.unit-card {
+    background-color: var(--color-white);
+    padding: 1rem;
+    border-radius: var(--border-radius-1);
+    box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.1);
+    transition: all 300ms ease;
+    position: relative;
+    padding-bottom: 3rem;
+}
+
+.unit-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.4rem 0.8rem rgba(0, 0, 0, 0.2);
+}
+
+.unit-card span {
+    background-color: var(--color-warning);
+    padding: 0.5rem;
+    border-radius: 50%;
+    color: var(--color-white);
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+}
+
+.unit-card h4 {
+    margin: 0.5rem 0;
+    color: var(--color-dark);
+}
+
+.unit-code {
+    color: var(--color-dark-variant);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.unit-description {
+    color: var(--color-dark-variant);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+
+.no-data {
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--color-white);
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--box-shadow);
+    color: var(--color-dark-variant);
+    font-style: italic;
+}
+
+/* Enhanced Form Styles */
+.forms-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
+    padding: 0 1rem;
+}
+
+.form-section {
+    background-color: var(--color-white);
+    padding: 2rem;
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease;
+    height: fit-content;
+}
+
+.form-section:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px);
+}
+
+.form-header {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 2px solid var(--color-light);
+}
+
+.form-header span {
+    background-color: var(--color-primary);
+    padding: 1rem;
+    border-radius: 50%;
+    color: var(--color-white);
+    font-size: 1.8rem;
+    box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.1);
+}
+
+.form-header h2 {
+    margin: 0;
+    color: var(--color-dark);
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.form-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-content p {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.form-content label {
+    color: var(--color-dark);
+    font-weight: 500;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-content label::after {
+    content: "*";
+    color: var(--color-danger);
+    font-size: 1.2rem;
+}
+
+.form-content label:has(+ input[required="false"])::after,
+.form-content label:has(+ select[required="false"])::after,
+.form-content label:has(+ textarea[required="false"])::after {
+    content: "";
+}
+
+.form-content input,
+.form-content select,
+.form-content textarea {
+    padding: 1rem;
+    border: 2px solid var(--color-light);
+    border-radius: var(--border-radius-1);
+    background-color: var(--color-background);
+    color: var(--color-dark);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: all 300ms ease;
+    width: 100%;
+}
+
+.form-content input:focus,
+.form-content select:focus,
+.form-content textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background-color: var(--color-white);
+    box-shadow: 0 0 0 0.2rem rgba(115, 128, 236, 0.2);
+}
+
+.form-content input:hover,
+.form-content select:hover,
+.form-content textarea:hover {
+    border-color: var(--color-primary);
+}
+
+.form-content textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.form-content select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23677483' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.2rem;
+    padding-right: 2.5rem;
+}
+
+.form-content input[type="date"] {
+    cursor: pointer;
+}
+
+.form-content input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-right: -0.5rem;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.form-content input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+.btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 1rem 1.5rem;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--border-radius-1);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 300ms ease;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    background-color: var(--color-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-primary span {
+    font-size: 1.2rem;
+}
+
+.alert {
+    padding: 1.2rem;
+    border-radius: var(--border-radius-1);
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    animation: slideIn 0.3s ease-out;
+}
+
+.alert::before {
+    font-family: 'Material Icons Sharp';
+    font-size: 1.5rem;
+}
+
+.alert-success {
+    background-color: var(--color-success);
+    color: var(--color-white);
+}
+
+.alert-success::before {
+    content: "check_circle";
+}
+
+.alert-error {
+    background-color: var(--color-danger);
+    color: var(--color-white);
+}
+
+.alert-error::before {
+    content: "error";
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-1rem);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Form validation styles */
+.form-content input:invalid,
+.form-content select:invalid,
+.form-content textarea:invalid {
+    border-color: var(--color-danger);
+}
+
+.form-content input:invalid:focus,
+.form-content select:invalid:focus,
+.form-content textarea:invalid:focus {
+    box-shadow: 0 0 0 0.2rem rgba(255, 119, 130, 0.2);
+}
+
+.errorlist {
+    color: var(--color-danger);
+    font-size: 0.85rem;
+    margin: 0.3rem 0 0;
+    padding-left: 1rem;
+    list-style: none;
+}
+
+.errorlist::before {
+    content: "•";
+    margin-right: 0.5rem;
+}
 
 /* MEDIA QUERIES  */
 @media screen and (max-width: 1200px) {
@@ -409,6 +781,12 @@ main .timetable.active .closeBtn{
         width: 150%;
         position: absolute;
         padding: 4rem 0 0 0;
+    }
+    .units-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .forms-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -450,4 +828,238 @@ main .timetable.active .closeBtn{
         width: 100%;
         padding: 2rem;
     }
+    .units-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .course-header,
+    .cohort-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .course-code,
+    .cohort-dates {
+        margin-left: 0;
+    }
+    .forms-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+    }
+    
+    .form-header span {
+        padding: 0.8rem;
+        font-size: 1.5rem;
+    }
+    
+    .form-content input,
+    .form-content select,
+    .form-content textarea {
+        padding: 0.8rem;
+    }
+}
+
+/* Profile Update Form Styles */
+.row-space {
+    margin-bottom: 1.5rem;
+}
+
+.input-group {
+    width: 100%;
+}
+
+.radio-group {
+    display: flex;
+    gap: 2rem;
+    margin-top: 0.5rem;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: var(--color-dark);
+    font-size: 0.95rem;
+}
+
+.radio-label input[type="radio"] {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
+.radio-label span {
+    font-weight: 500;
+}
+
+.input--style-4 {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--color-light);
+    border-radius: var(--border-radius-1);
+    background-color: var(--color-background);
+    color: var(--color-dark);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: all 300ms ease;
+}
+
+.input--style-4:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background-color: var(--color-white);
+    box-shadow: 0 0 0 0.2rem rgba(115, 128, 236, 0.2);
+}
+
+.input--style-4:hover {
+    border-color: var(--color-primary);
+}
+
+.input--style-4[type="file"] {
+    padding: 0.8rem;
+    cursor: pointer;
+}
+
+.input--style-4[type="file"]::-webkit-file-upload-button {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--border-radius-1);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 300ms ease;
+}
+
+.input--style-4[type="file"]::-webkit-file-upload-button:hover {
+    background-color: var(--color-dark);
+}
+
+.input--style-4[type="date"] {
+    cursor: pointer;
+}
+
+.input--style-4[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-right: -0.5rem;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.input--style-4[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+.input--style-4[rows] {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+/* Edit Button Styles */
+.btn-edit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border-radius: 50%;
+    transition: all 300ms ease;
+    margin-left: auto;
+}
+
+.btn-edit:hover {
+    background-color: var(--color-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.1);
+}
+
+.btn-edit span {
+    font-size: 1.2rem;
+}
+
+.course-header,
+.cohort-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.unit-card .btn-edit {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+}
+
+/* Unit Management Styles */
+.units-list {
+    margin-top: 2rem;
+}
+
+.units-list h3 {
+    margin-bottom: 1rem;
+    color: var(--color-dark);
+    font-size: 1.2rem;
+}
+
+.unit-actions {
+    display: flex;
+    gap: 0.5rem;
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+}
+
+.btn-danger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: var(--color-danger);
+    color: var(--color-white);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 300ms ease;
+}
+
+.btn-danger:hover {
+    background-color: #ff4d5a;
+    transform: translateY(-2px);
+    box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.1);
+}
+
+.btn-danger span {
+    font-size: 1.2rem;
+}
+
+.add-unit-form {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--color-light);
+}
+
+.add-unit-form h3 {
+    margin-bottom: 1.5rem;
+    color: var(--color-dark);
+    font-size: 1.2rem;
+}
+
+.remove-unit-form {
+    margin: 0;
+    padding: 0;
 }

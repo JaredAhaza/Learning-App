@@ -42,9 +42,14 @@ class AnswerInLine(admin.TabularInline):
 class QuestionAdmin(admin.ModelAdmin):
     inlines = [AnswerInLine]
 
+class UnitInline(admin.TabularInline):
+    model = Unit
+    extra = 1  # Number of extra forms to display
+
 class CohortAdmin(admin.ModelAdmin):
     list_display = ('name', 'course')
     search_fields = ('name', 'course')
+    inlines = [UnitInline]
 
 class EnrollmentAdmin(admin.ModelAdmin):
     list_display = ('student', 'cohort', 'status')

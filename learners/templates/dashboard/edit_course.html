@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update Teacher Profile</title>
+    <title>Edit Course</title>
     <link rel="shortcut icon" href="{% static 'dashboard/images/logo.png' %}">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'dashboard/style.css' %}">
@@ -21,6 +21,10 @@
             <a href="{% url 'teacher_dashboard' %}">
                 <span class="material-icons-sharp">home</span>
                 <h3>Dashboard</h3>
+            </a>
+            <a href="{% url 'teacher_courses' %}">
+                <span class="material-icons-sharp">menu_book</span>
+                <h3>Courses</h3>
             </a>
             <a href="{% url 'teacher_logout' %}">
                 <span class="material-icons-sharp">logout</span>
@@ -56,7 +60,7 @@
         </aside>
 
         <main>
-            <h1>Update Profile</h1>
+            <h1>Edit Course</h1>
             
             {% if messages %}
                 {% for message in messages %}
@@ -68,57 +72,29 @@
 
             <div class="form-section" style="max-width: 800px; margin: 2rem auto;">
                 <div class="form-header">
-                    <span class="material-icons-sharp">person</span>
-                    <h2>Basic Information</h2>
+                    <span class="material-icons-sharp">school</span>
+                    <h2>Course Information</h2>
                 </div>
-                <form method="POST" enctype="multipart/form-data" class="form-content">
+                <form method="POST" class="form-content">
                     {% csrf_token %}
-                    
-                    <div class="row row-space">
-                        <div class="input-group">
-                            <label class="label">Phone Number</label>
-                            {% render_field form.phone_number class="input--style-4" %}
-                        </div>
-                    </div>
-
-                    <div class="row row-space">
-                        <div class="input-group">
-                            <label class="label">Birthday</label>
-                            {% render_field form.date_of_birth class="input--style-4" type="date" %}
-                        </div>
-                    </div>
-
-                    <div class="row row-space">
-                        <div class="input-group">
-                            <label class="label">Gender</label>
-                            <div class="radio-group">
-                                {% for choice in form.gender %}
-                                    <label class="radio-label">
-                                        {{ choice.tag }}
-                                        <span>{{ choice.choice_label }}</span>
-                                    </label>
-                                {% endfor %}
+                    {% for field in form %}
+                        <div class="row row-space">
+                            <div class="input-group">
+                                <label class="label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <ul class="errorlist">
+                                        {% for error in field.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
                             </div>
                         </div>
-                    </div>
-
-                    <div class="row row-space">
-                        <div class="input-group">
-                            <label class="label">Profile Picture</label>
-                            {% render_field form.profile_picture class="input--style-4" %}
-                        </div>
-                    </div>
-
-                    <div class="row row-space">
-                        <div class="input-group">
-                            <label class="label">Bio</label>
-                            {% render_field form.bio class="input--style-4" rows="4" %}
-                        </div>
-                    </div>
-
+                    {% endfor %}
                     <button type="submit" class="btn-primary">
                         <span class="material-icons-sharp">save</span>
-                        Update Profile
+                        Save Changes
                     </button>
                 </form>
             </div>
@@ -147,4 +123,4 @@
 
     <script src="{% static 'dashboard/app.js' %}"></script>
 </body>
-</html>
+</html> 

@@ -69,7 +69,17 @@
                      margin-bottom: 16px;">Update Your Profile</a>
                 <div class="about">
                     <h5>Course</h5>
-                    <p>BTech. Computer Science & Engineering</p>
+                    {% if enrolled_course %}
+                        <p>{{ enrolled_course.course_name }} ({{ enrolled_course.course_code }})</p>
+                    {% else %}
+                        <p>Not enrolled in any course</p>
+                    {% endif %}
+                    <h5>Cohort</h5>
+                    {% if enrolled_cohort %}
+                        <p>{{ enrolled_cohort.name }}</p>
+                    {% else %}
+                        <p>Not enrolled in any cohort</p>
+                    {% endif %}
                     <h5>DOB</h5>
                     <p>{{ student_profile.date_of_birth }}</p>
                     <h5>Contact</h5>
@@ -85,58 +95,26 @@
         </aside>
 
         <main>
-            <h1>Attendance</h1>
+            <h1>
+                {% if enrolled_cohort %}
+                    Cohort: {{ enrolled_cohort.name }}
+                {% else %}
+                    No Cohort Enrolled
+                {% endif %}
+            </h1>
             <div class="subjects">
-                <div class="eg">
-                    <span class="material-icons-sharp">architecture</span>
-                    <h3>Engineering Graphics</h3>
-                    <h2>12/14</h2>
-                    <div class="progress">
-                        <svg><circle cx="38" cy="38" r="36"></circle></svg>
-                        <div class="number"><p>86%</p></div>
-                    </div>
-                    <small class="text-muted">Last 24 Hours</small>
-                </div>
-                <div class="mth">
-                    <span class="material-icons-sharp">functions</span>
-                    <h3>Mathematical Engineering</h3>
-                    <h2>27/29</h2>
-                    <div class="progress">
-                        <svg><circle cx="38" cy="38" r="36"></circle></svg>
-                        <div class="number"><p>93%</p></div>
-                    </div>
-                    <small class="text-muted">Last 24 Hours</small>
-                </div>
-                <div class="cs">
-                    <span class="material-icons-sharp">computer</span>
-                    <h3>Computer Architecture</h3>
-                    <h2>27/30</h2>
-                    <div class="progress">
-                        <svg><circle cx="38" cy="38" r="36"></circle></svg>
-                        <div class="number"><p>81%</p></div>
-                    </div>
-                    <small class="text-muted">Last 24 Hours</small>
-                </div>
-                <div class="cg">
-                    <span class="material-icons-sharp">dns</span>
-                    <h3>Database Management</h3>
-                    <h2>24/25</h2>
-                    <div class="progress">
-                        <svg><circle cx="38" cy="38" r="36"></circle></svg>
-                        <div class="number"><p>96%</p></div>
-                    </div>
-                    <small class="text-muted">Last 24 Hours</small>
-                </div>
-                <div class="net">
-                    <span class="material-icons-sharp">router</span>
-                    <h3>Network Security</h3>
-                    <h2>25/27</h2>
-                    <div class="progress">
-                        <svg><circle cx="38" cy="38" r="36"></circle></svg>
-                        <div class="number"><p>92%</p></div>
-                    </div>
-                    <small class="text-muted">Last 24 Hours</small>
-                </div>
+                {% if cohort_units %}
+                    {% for unit in cohort_units %}
+                        <div class="unit-card">
+                            <span class="material-icons-sharp">menu_book</span>
+                            <h3>{{ unit.unit_name }}</h3>
+                            <p><b>Code:</b> {{ unit.unit_code }}</p>
+                            <p><b>Teacher:</b> {% if unit.teacher %}{{ unit.teacher.user.username }}{% else %}N/A{% endif %}</p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No units available in this cohort.</p>
+                {% endif %}
             </div>
 
             <div class="timetable" id="timetable">

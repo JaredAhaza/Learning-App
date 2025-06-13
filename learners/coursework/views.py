@@ -22,7 +22,3 @@ def add_course(request):
         course_form = CourseForm()
     print("Rendering add_course.html")
     return render(request, 'coursework/add_course.html', {'course_form': course_form})
-
-def course_list(request):
-    courses = Course.objects.all()  # Fetch all courses from the database
-    return render(request, 'coursework/course_list.html', {'courses': courses})
