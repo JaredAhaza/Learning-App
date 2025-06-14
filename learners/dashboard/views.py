@@ -2,9 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from accounts.models import *
 from accounts.forms import *
-from coursework.models import Enrollment, Unit, Course, Cohort
+from coursework.models import Enrollment, Unit, Course, Cohort, EnrollmentRequest
 from coursework.forms import CourseForm, CohortForm, UnitForm
 from django.contrib import messages
+from django.utils import timezone
 
 # Create your views here.
 @login_required
@@ -24,21 +25,39 @@ def student_dashboard(request):
             student_profile = StudentProfile.objects.get(student=student)
         except StudentProfile.DoesNotExist:
             student_profile = None
-        # Get the student's active enrollment (assuming one active at a time)
+
+        # Get the student's active enrollment
         enrollment = Enrollment.objects.filter(student=student, status='active').select_related('cohort__course').first()
         enrolled_cohort = enrollment.cohort if enrollment else None
         enrolled_course = enrolled_cohort.course if enrolled_cohort else None
         cohort_units = enrolled_cohort.units.all() if enrolled_cohort else []
+
+        # Get pending enrollment requests
+        pending_requests = EnrollmentRequest.objects.filter(
+            student=student,
+            status='pending'
+        ).select_related('cohort__course')
+
+        # Get available cohorts (excluding those the student is already enrolled in or has pending requests for)
+        enrolled_cohort_ids = Enrollment.objects.filter(student=student).values_list('cohort_id', flat=True)
+        requested_cohort_ids = EnrollmentRequest.objects.filter(student=student).values_list('cohort_id', flat=True)
+        available_cohorts = Cohort.objects.exclude(
+            cohort_id__in=list(enrolled_cohort_ids) + list(requested_cohort_ids)
+        ).select_related('course')
+
     except Student.DoesNotExist:
-        return redirect ('studentregister')
+        return redirect('studentregister')
+
     context = {
         'student': student,
         'student_profile': student_profile,
         'enrolled_cohort': enrolled_cohort,
         'enrolled_course': enrolled_course,
         'cohort_units': cohort_units,
+        'pending_requests': pending_requests,
+        'available_cohorts': available_cohorts,
     }
-    return render(request, 'dashboard/student_dashboard.html', context)
+    return render(request, 'dashboard/students/student_dashboard.html', context)
 
 @login_required
 def update_student_profile(request):
@@ -51,11 +70,11 @@ def update_student_profile(request):
             student_profile = StudentProfile.objects.get(student=student)
             form = StudentProfileForm(request.POST, request.FILES, instance=student_profile)
         except StudentProfile.DoesNotExist:
-            student_profile = StudentProfile(student=student)  # Set the student field here
+            student_profile = StudentProfile(student=student)
             form = StudentProfileForm(request.POST, request.FILES, instance=student_profile)
         if form.is_valid():
-            student_profile = form.save(commit=False)  # Create a new StudentProfile instance
-            student_profile.student = student  # Set the student field
+            student_profile = form.save(commit=False)
+            student_profile.student = student
             student_profile.save()
             return redirect('student_dashboard')
         else:
@@ -65,10 +84,41 @@ def update_student_profile(request):
             student_profile = StudentProfile.objects.get(student=student)
             form = StudentProfileForm(instance=student_profile)
         except StudentProfile.DoesNotExist:
-            student_profile = StudentProfile(student=student)  # Set the student field here
+            student_profile = StudentProfile(student=student)
             form = StudentProfileForm(instance=student_profile)
-    return render(request, 'dashboard/update_student_profile.html', {'form': form})
+    return render(request, 'dashboard/students/update_student_profile.html', {'form': form})
 
+@login_required
+def request_enrollment(request, cohort_id):
+    try:
+        student = Student.objects.get(user=request.user)
+        cohort = get_object_or_404(Cohort, cohort_id=cohort_id)
+        
+        # Check if student already has an active enrollment or pending request
+        existing_enrollment = Enrollment.objects.filter(student=student, cohort=cohort).exists()
+        existing_request = EnrollmentRequest.objects.filter(student=student, cohort=cohort).exists()
+        
+        if existing_enrollment or existing_request:
+            messages.error(request, 'You already have an active enrollment or pending request for this cohort.')
+            return redirect('student_dashboard')
+            
+        if request.method == 'POST':
+            notes = request.POST.get('notes', '')
+            EnrollmentRequest.objects.create(
+                student=student,
+                cohort=cohort,
+                notes=notes
+            )
+            messages.success(request, 'Enrollment request submitted successfully!')
+            return redirect('student_dashboard')
+            
+        return render(request, 'dashboard/students/request_enrollment.html', {
+            'cohort': cohort,
+            'student': student
+        })
+        
+    except Student.DoesNotExist:
+        return redirect('studentregister')
 
 @login_required
 def teacher_dashboard(request):
@@ -112,7 +162,7 @@ def teacher_dashboard(request):
         'assigned_units': assigned_units,
         'all_enrollments': all_enrollments
     }
-    return render(request, 'dashboard/teacher_dashboard.html', context)
+    return render(request, 'dashboard/teachers/teacher_dashboard.html', context)
 
 
 @login_required
@@ -142,7 +192,7 @@ def update_teacher_profile(request):
         except TeacherProfile.DoesNotExist:
             teacher_profile = TeacherProfile(teacher=teacher)  # Set the teacher field here
             form = TeacherProfileForm(instance=teacher_profile)
-    return render(request, 'dashboard/update_teacher_profile.html', {'form': form})
+    return render(request, 'dashboard/teachers/update_teacher_profile.html', {'form': form})
 
 @login_required
 def teacher_courses(request):
@@ -187,7 +237,7 @@ def teacher_courses(request):
         'teacher_profile': teacher_profile,
         'courses_data': courses_data
     }
-    return render(request, 'dashboard/teacher_courses.html', context)
+    return render(request, 'dashboard/teachers/teacher_courses.html', context)
 
 @login_required
 def add_course(request):
@@ -244,7 +294,7 @@ def add_course(request):
         'courses': courses,
         'cohorts': cohorts
     }
-    return render(request, 'dashboard/add_course.html', context)
+    return render(request, 'dashboard/teachers/add_course.html', context)
 
 @login_required
 def edit_course(request, course_id):
@@ -258,7 +308,7 @@ def edit_course(request, course_id):
     else:
         form = CourseForm(instance=course)
     
-    return render(request, 'dashboard/edit_course.html', {
+    return render(request, 'dashboard/teachers/edit_course.html', {
         'form': form,
         'teacher': request.user.teacher,
         'teacher_profile': request.user.teacher.teacherprofile
@@ -302,7 +352,7 @@ def edit_cohort(request, cohort_id):
         form = CohortForm(instance=cohort)
         unit_form = UnitForm(initial={'cohort': cohort})
     
-    return render(request, 'dashboard/edit_cohort.html', {
+    return render(request, 'dashboard/teachers/edit_cohort.html', {
         'form': form,
         'unit_form': unit_form,
         'existing_units': existing_units,
@@ -322,8 +372,70 @@ def edit_unit(request, unit_id):
     else:
         form = UnitForm(instance=unit)
     
-    return render(request, 'dashboard/edit_unit.html', {
+    return render(request, 'dashboard/teachers/edit_unit.html', {
         'form': form,
         'teacher': request.user.teacher,
         'teacher_profile': request.user.teacher.teacherprofile
     })
+
+@login_required
+def manage_enrollment_requests(request):
+    try:
+        teacher = Teacher.objects.get(user=request.user)
+        
+        # Get all enrollment requests for cohorts that this teacher teaches
+        teacher_cohorts = Cohort.objects.filter(units__teacher=teacher).distinct()
+        enrollment_requests = EnrollmentRequest.objects.filter(
+            cohort__in=teacher_cohorts,
+            status='pending'
+        ).select_related(
+            'student',
+            'student__user',
+            'cohort',
+            'cohort__course'
+        ).order_by('-requested_at')
+        
+        if request.method == 'POST':
+            request_id = request.POST.get('request_id')
+            action = request.POST.get('action')
+            notes = request.POST.get('notes', '')
+            
+            try:
+                enrollment_request = EnrollmentRequest.objects.get(
+                    id=request_id,
+                    cohort__in=teacher_cohorts,
+                    status='pending'
+                )
+                
+                if action == 'approve':
+                    # Create enrollment
+                    Enrollment.objects.create(
+                        student=enrollment_request.student,
+                        cohort=enrollment_request.cohort,
+                        status='active'
+                    )
+                    enrollment_request.status = 'approved'
+                    messages.success(request, 'Enrollment request approved successfully!')
+                    
+                elif action == 'reject':
+                    enrollment_request.status = 'rejected'
+                    messages.success(request, 'Enrollment request rejected successfully!')
+                
+                enrollment_request.notes = notes
+                enrollment_request.reviewed_by = teacher
+                enrollment_request.reviewed_at = timezone.now()
+                enrollment_request.save()
+                
+            except EnrollmentRequest.DoesNotExist:
+                messages.error(request, 'Enrollment request not found!')
+                
+            return redirect('manage_enrollment_requests')
+            
+    except Teacher.DoesNotExist:
+        return redirect('teachersregister')
+        
+    context = {
+        'teacher': teacher,
+        'enrollment_requests': enrollment_requests
+    }
+    return render(request, 'dashboard/teachers/manage_enrollment_requests.html', context)

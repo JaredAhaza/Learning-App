@@ -1,0 +1,45 @@
+{% extends 'includes/teacherbase.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block content %}
+        <main>
+            <h1>Edit Unit</h1>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="form-section" style="max-width: 800px; margin: 2rem auto;">
+                <div class="form-header">
+                    <span class="material-icons-sharp">menu_book</span>
+                    <h2>Unit Information</h2>
+                </div>
+                <form method="POST" class="form-content">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="row row-space">
+                            <div class="input-group">
+                                <label class="label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <ul class="errorlist">
+                                        {% for error in field.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn-primary">
+                        <span class="material-icons-sharp">save</span>
+                        Save Changes
+                    </button>
+                </form>
+            </div>
+        </main>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% load static %}
+{% load widget_tweaks %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="shortcut icon" href="{% static 'dashboard/images/logo.png' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'dashboard/style.css' %}">
+</head>
+<body>
+    <header>
+        <div class="logo" title="University Management System">
+            <img src="{% static 'dashboard/images/logo.png' %}" alt="">
+            <h2>U<span class="danger">M</span>S</h2>
+        </div>
+        <div class="navbar">
+            <a href="index.html" class="active">
+                <span class="material-icons-sharp">home</span>
+                <h3>Home</h3>
+            </a>
+            <a href="/update_student_profile">
+                <span class="material-icons-sharp">person</span>
+                <h3>Update Student Profile</h3>
+            </a>
+            <a href="timetable.html" onclick="timeTableAll()">
+                <span class="material-icons-sharp">today</span>
+                <h3>Time Table</h3>
+            </a> 
+            <a href="exam.html">
+                <span class="material-icons-sharp">grid_view</span>
+                <h3>Examination</h3>
+            </a>
+            <a href="/student_logout">
+                <span class="material-icons-sharp" onclick="">logout</span>
+                <h3>Logout</h3>
+            </a>
+        </div>
+        <div id="profile-btn">
+            <span class="material-icons-sharp">person</span>
+        </div>
+        <div class="theme-toggler">
+            <span class="material-icons-sharp active">light_mode</span>
+            <span class="material-icons-sharp">dark_mode</span>
+        </div>
+        
+    </header>
+    <div class="container">
+        <aside>
+            <div class="profile">
+                <div class="top">
+                    <div class="profile-photo">
+                        {% if student_profile %}
+                            <img src="{{ student_profile.profile_picture.url }}" alt="">
+                        {% else %}
+                            <img src="{% static 'dashboard/images/profile-1.jpg' %}" alt="">
+                        {% endif %}
+                    </div>
+                    <div class="info">
+                        <p>Hey, <b>{{ student.user }}</b> </p>
+                        <small class="text-muted">{{ student.student_id }}</small>
+                    </div>
+                </div>
+                <a href="/update_student_profile" 
+                    style="display: block; width: 100%; background-color: #dc3545; color: white; 
+                    padding: 10px 16px; border-radius: 5px; text-align: center; text-decoration: none; 
+                    margin-bottom: 16px;">
+                    Update Your Profile
+                </a>
+                <div class="about">
+                    <h3>Current Enrollment</h3>
+                    <p>{{ enrolled_course.course_name }}</p>
+                    <h5>Cohort</h5>
+                    <p>{{ enrolled_cohort.name }}</p>
+                    <h5>Cohort Dates</h5>
+                    <p>{{ enrolled_cohort.start_date }} to {{ enrolled_cohort.end_date }}</p>
+                    <h5>DOB</h5>
+                    <p>{{ student_profile.date_of_birth }}</p>
+                    <h5>Contact</h5>
+                    <p>{{ student_profile.phone_number }}</p>
+                    <h5>Email</h5>
+                    <p>{{ student.email }}</p>
+                    <h5>Bio</h5>
+                    <p>{{ student_profile.bio }}</p>
+                    <h5>Gender</h5>
+                    <p>{{ student_profile.gender }}</p>
+                </div>
+            </div>
+        </aside>
+<main>
+        {% block content %}
+
+        {% endblock %}
+        <div class="right">
+            <div class="announcements">
+                <h2>Announcements</h2>
+                <div class="updates">
+                    <div class="message">
+                        <p> <b>Academic</b> Summer training internship with Live Projects.</p>
+                        <small class="text-muted">2 Minutes Ago</small>
+                    </div>
+                    <div class="message">
+                        <p> <b>Co-curricular</b> Global internship oportunity by Student organization.</p>
+                        <small class="text-muted">10 Minutes Ago</small>
+                    </div>
+                    <div class="message">
+                        <p> <b>Examination</b> Instructions for Mid Term Examination.</p>
+                        <small class="text-muted">Yesterday</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leaves">
+                <h2>Teachers on leave</h2>
+                <div class="teacher">
+                    <div class="profile-photo"><img src="{% static 'dashboard/images/profile-2.jpeg' %}" alt=""></div>
+                    <div class="info">
+                        <h3>The Professor</h3>
+                        <small class="text-muted">Full Day</small>
+                    </div>
+                </div>
+                <div class="teacher">
+                    <div class="profile-photo"><img src="{% static 'dashboard/images/profile-3.jpg' %}" alt=""></div>
+                    <div class="info">
+                        <h3>Lisa Manobal</h3>
+                        <small class="text-muted">Half Day</small>
+                    </div>
+                </div>
+                <div class="teacher">
+                    <div class="profile-photo"><img src="{% static 'dashboard/images/profile-4.jpg' %}" alt=""></div>
+                    <div class="info">
+                        <h3>Himanshu Jindal</h3>
+                        <small class="text-muted">Full Day</small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+    <script src="{% static 'dashboard/timeTable.js' %}"></script>
+    <script src="{% static 'dashboard/app.js' %}"></script>
+</body>
+</html>

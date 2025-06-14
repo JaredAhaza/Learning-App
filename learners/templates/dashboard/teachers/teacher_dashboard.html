@@ -1,0 +1,163 @@
+{% extends 'includes/teacherbase.html' %}
+{% load static %}
+
+{% block content %}
+
+        <main>
+            <h1>Welcome, {{ teacher.user.first_name }} {{ teacher.user.last_name }}</h1>
+            <h2>Your Assigned Cohort: {{ assigned_units.0.cohort.name }}</h2>
+            
+            <div class="subjects">
+                {% if assigned_units %}
+                    {% for unit in assigned_units %}
+                        <div class="unit-card">
+                            <span class="material-icons-sharp">menu_book</span>
+                            <h3>{{ unit.unit_name }}</h3>
+                            <p><b>Code:</b> {{ unit.unit_code }}</p>
+                            <p><b>Cohort:</b> {{ unit.cohort.name }}</p>
+                            <p><b>Course:</b> {{ unit.cohort.course.course_name }}</p>
+                            {% if unit.description %}
+                                <p><b>Description:</b> {{ unit.description }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No units have been assigned to you yet.</p>
+                {% endif %}
+            </div>
+
+            <br>
+            <h1>Enrolled Students</h1>
+            <div class="enrolled-students-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Student ID</th>
+                            <th>Unit</th>
+                            <th>Cohort</th>
+                            <th>Course</th>
+                            <th>Enrollment Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if all_enrollments %}
+                            {% for enrollment in all_enrollments %}
+                                <tr>
+                                    <td>{{ enrollment.student_name }}</td>
+                                    <td>{{ enrollment.student_id }}</td>
+                                    <td>{{ enrollment.unit_name }}</td>
+                                    <td>{{ enrollment.cohort_name }}</td>
+                                    <td>{{ enrollment.course_name }}</td>
+                                    <td>
+                                        <span class="status-badge {{ enrollment.status }}">
+                                            {{ enrollment.status|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="no-data">No students enrolled in any of your units.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <br>
+            <h1>Manage Enrollment Requests</h1>
+            <div class="subjects">
+                
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                {% if enrollment_requests %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Course</th>
+                                <th>Cohort</th>
+                                <th>Requested At</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in enrollment_requests %}
+                            <tr>
+                                <td>{{ request.student.user.get_full_name }}</td>
+                                <td>{{ request.cohort.course.course_name }}</td>
+                                <td>{{ request.cohort.name }}</td>
+                                <td>{{ request.requested_at|date:"M d, Y H:i" }}</td>
+                                <td>{{ request.notes|default:"No notes" }}</td>
+                                <td>
+                                    <form method="POST" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="request_id" value="{{ request.id }}">
+                                        <input type="hidden" name="notes" value="{{ request.notes }}">
+                                        <button type="submit" name="action" value="approve" 
+                                                class="btn btn-success btn-sm">Approve</button>
+                                        <button type="submit" name="action" value="reject" 
+                                                class="btn btn-danger btn-sm">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    No pending enrollment requests found.
+                </div>
+                {% endif %}
+            </div>
+
+            <h1>Attendance</h1>
+            <div class="subjects">
+                <div class="eg">
+                    <span class="material-icons-sharp">architecture</span>
+                    <h3>Engineering Graphics</h3>
+                    <h2>12/14</h2>
+                    <div class="progress">
+                        <svg><circle cx="38" cy="38" r="36"></circle></svg>
+                        <div class="number"><p>86%</p></div>
+                    </div>
+                    <small class="text-muted">Last 24 Hours</small>
+                </div>
+                <div class="cg">
+                    <span class="material-icons-sharp">dns</span>
+                    <h3>Database Management</h3>
+                    <h2>24/25</h2>
+                    <div class="progress">
+                        <svg><circle cx="38" cy="38" r="36"></circle></svg>
+                        <div class="number"><p>96%</p></div>
+                    </div>
+                    <small class="text-muted">Last 24 Hours</small>
+                </div>
+                <div class="net">
+                    <span class="material-icons-sharp">router</span>
+                    <h3>Network Security</h3>
+                    <h2>25/27</h2>
+                    <div class="progress">
+                        <svg><circle cx="38" cy="38" r="36"></circle></svg>
+                        <div class="number"><p>92%</p></div>
+                    </div>
+                    <small class="text-muted">Last 24 Hours</small>
+                </div>
+            </div>
+
+            
+        </main>
+{% endblock %}
+        

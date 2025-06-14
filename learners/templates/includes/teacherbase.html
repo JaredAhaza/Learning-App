@@ -1,4 +1,5 @@
 {% load static %}
+{% load dashboard_extras %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -6,7 +7,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard</title>
+    <title>Teacher Dashboard</title>
     <link rel="shortcut icon" href="{% static 'dashboard/images/logo.png' %}">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'dashboard/style.css' %}">
@@ -18,23 +19,25 @@
             <h2>U<span class="danger">M</span>S</h2>
         </div>
         <div class="navbar">
-            <a href="index.html" class="active">
+            <a href="/teacher_dashboard" class="active">
                 <span class="material-icons-sharp">home</span>
                 <h3>Home</h3>
             </a>
-            <a href="/update_student_profile">
+            <a href="/teacher_courses">
+                <span class="material-icons-sharp">menu_book</span>
+                <h3>Courses</h3>
+            </a>
+           
+                <a href="/manage_enrollment_request ">
+                    <span class="material-icons-sharp">assignment</span>
+                    <h3>Manage Requests</h3>
+                </a>
+           
+            <a href="/update_teacher_profile">
                 <span class="material-icons-sharp">person</span>
-                <h3>Update Student Profile</h3>
-            </a>
-            <a href="timetable.html" onclick="timeTableAll()">
-                <span class="material-icons-sharp">today</span>
-                <h3>Time Table</h3>
-            </a> 
-            <a href="exam.html">
-                <span class="material-icons-sharp">grid_view</span>
-                <h3>Examination</h3>
-            </a>
-            <a href="/student_logout">
+                <h3>Update Your Profile</h3>
+            </a>           
+            <a href="/teacher_logout">
                 <span class="material-icons-sharp" onclick="">logout</span>
                 <h3>Logout</h3>
             </a>
@@ -53,91 +56,41 @@
             <div class="profile">
                 <div class="top">
                     <div class="profile-photo">
-                        {% if student_profile %}
-                            <img src="{{ student_profile.profile_picture.url }}" alt="">
+                        {% if teacher_profile %}
+                            <img src="{{ teacher_profile.profile_picture.url }}" alt="">
                         {% else %}
                             <img src="{% static 'dashboard/images/profile-1.jpg' %}" alt="">
                         {% endif %}
                     </div>
                     <div class="info">
-                        <p>Hey, <b>{{ student.user }}</b> </p>
-                        <small class="text-muted">{{ student.student_id }}</small>
+                        <p>Hey, <b>{{ teacher.user }}</b> </p>
+                        <small class="text-muted">{{ teacher.student_id }}</small>
                     </div>
                 </div>
-                <a href="http:/update_student_profile" style="display: block; width: 100%; background-color: #dc3545;
+                    <a href="/update_teacher_profile" style="display: block; width: 100%; background-color: #dc3545;
                      color: white; padding: 10px 16px; border-radius: 5px; text-align: center; text-decoration: none;
                      margin-bottom: 16px;">Update Your Profile</a>
                 <div class="about">
-                    <h5>Course</h5>
-                    {% if enrolled_course %}
-                        <p>{{ enrolled_course.course_name }} ({{ enrolled_course.course_code }})</p>
-                    {% else %}
-                        <p>Not enrolled in any course</p>
-                    {% endif %}
-                    <h5>Cohort</h5>
-                    {% if enrolled_cohort %}
-                        <p>{{ enrolled_cohort.name }}</p>
-                    {% else %}
-                        <p>Not enrolled in any cohort</p>
-                    {% endif %}
                     <h5>DOB</h5>
-                    <p>{{ student_profile.date_of_birth }}</p>
+                    <p>{{ teacher_profile.date_of_birth }}</p>
                     <h5>Contact</h5>
-                    <p>{{ student_profile.phone_number }}</p>
+                    <p>{{ teacher_profile.phone_number }}</p>
                     <h5>Email</h5>
-                    <p>{{ student.email }}</p>
+                    <p>{{ teacher.email }}</p>
                     <h5>Bio</h5>
-                    <p>{{ student_profile.bio }}</p>
+                    <p>{{ teacher_profile.bio }}</p>
                     <h5>Gender</h5>
-                    <p>{{ student_profile.gender }}</p>
+                    <p>{{ teacher_profile.gender }}</p>
                 </div>
             </div>
         </aside>
-
         <main>
-            <h1>
-                {% if enrolled_cohort %}
-                    Cohort: {{ enrolled_cohort.name }}
-                {% else %}
-                    No Cohort Enrolled
-                {% endif %}
-            </h1>
-            <div class="subjects">
-                {% if cohort_units %}
-                    {% for unit in cohort_units %}
-                        <div class="unit-card">
-                            <span class="material-icons-sharp">menu_book</span>
-                            <h3>{{ unit.unit_name }}</h3>
-                            <p><b>Code:</b> {{ unit.unit_code }}</p>
-                            <p><b>Teacher:</b> {% if unit.teacher %}{{ unit.teacher.user.username }}{% else %}N/A{% endif %}</p>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p>No units available in this cohort.</p>
-                {% endif %}
-            </div>
 
-            <div class="timetable" id="timetable">
-                <div>
-                    <span id="prevDay">&lt;</span>
-                    <h2>Today's Timetable</h2>
-                    <span id="nextDay">&gt;</span>
-                </div>
-                <span class="closeBtn" onclick="timeTableAll()">X</span>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Room No.</th>
-                            <th>Subject</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+        {% block content %}
+
+        {% endblock %}
         </main>
-
+        <main>
         <div class="right">
             <div class="announcements">
                 <h2>Announcements</h2>
@@ -183,6 +136,7 @@
             </div>
 
         </div>
+        </main>
     </div>
 
     <script src="{% static 'dashboard/timeTable.js' %}"></script>

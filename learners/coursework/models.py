@@ -45,6 +45,24 @@ class Enrollment(models.Model):
     def __str__(self):
         return f"{self.student} - {self.cohort} ({self.status})"
 
+class EnrollmentRequest(models.Model):
+    student = models.ForeignKey('accounts.Student', on_delete=models.CASCADE)
+    cohort = models.ForeignKey('Cohort', on_delete=models.CASCADE)
+    requested_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=[
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected')
+    ], default='pending')
+    notes = models.TextField(blank=True, null=True)
+    reviewed_by = models.ForeignKey('accounts.Teacher', on_delete=models.SET_NULL, null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('student', 'cohort')
+
+    def __str__(self):
+        return f"{self.student} - {self.cohort} ({self.status})"
 
 class Lesson(models.Model):
     """Represents a lesson within a course."""

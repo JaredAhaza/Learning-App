@@ -70,7 +70,6 @@ def teachersregister(request):
         
     return render(request, 'accounts/teachersregister.html', {'user_form': user_form, 'teacher_form': teacher_form})
 
-
 def teacher_logout_view(request):
     logout(request)
     return HttpResponseRedirect('/teacherlogin')

@@ -1,0 +1,101 @@
+{% extends 'includes/base.html' %}
+{% load static %}
+
+{% block content %}
+
+
+<main>
+    <h1>Welcome, {{ student.user.first_name }} {{ student.user.last_name }}</h1>
+    <h2>Available Cohorts</h2>
+        <div class="subjects">
+                <!-- Pending Requests Section -->
+            {% if pending_requests %}
+            
+                
+                    <div class="card-header">
+                        <h2>Pending Enrollment Requests</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for request in pending_requests %}
+                            <div class="list-group-item">
+                                <h3>{{ request.cohort.course.course_name }}</h3>
+                                <p><strong>Cohort:</strong> {{ request.cohort.name }}</p>
+                                <p><strong>Requested:</strong> {{ request.requested_at|date:"M d, Y H:i" }}</p>
+                                {% if request.notes %}
+                                <p><strong>Notes:</strong> {{ request.notes }}</p>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+        
+                {% endif %}
+           
+                <!-- Available Cohorts Section -->
+             
+                    
+               
+        
+                {% if available_cohorts %}
+                    
+                           {% for cohort in available_cohorts %}
+                            <div class="list-group-item">
+                                <h3>{{ cohort.course.course_name }}</h3>
+                                <p><strong>Cohort:</strong> {{ cohort.name }}</p>
+                                <p><strong>Start Date:</strong> {{ cohort.start_date }}</p>
+                                <p><strong>End Date:</strong> {{ cohort.end_date }}</p>
+                                <a href="{% url 'request_enrollment' cohort.cohort_id %}" class="btn btn-primary">Request Enrollment</a>
+                            </div>
+                            {% endfor %}
+                        
+                {% endif %}
+        </div>  
+        
+     <br>
+    <h1>Your Units</h1>
+    <div class="subjects">
+        {% if cohort_units %}
+            {% for unit in cohort_units %}
+                <div class="unit-card">
+                    <span class="material-icons-sharp">menu_book</span>
+                    <h3>{{ unit.unit_name }}</h3>
+                    <h2>12/14</h2><br>
+                        <div class="progress">
+                            <svg><circle cx="38" cy="38" r="36"></circle></svg>
+                            <div class="number"><p>86%</p></div>
+                        </div>
+                    <p class="mb-1">{{ unit.description }}</p>
+                    <small class="text-muted">Last 24 Hours</small>
+                </div>
+                {% endfor %}
+                {% else %}
+                    <p>No units have been assigned to you yet.</p>
+        
+        {% endif %}
+        <br>
+    </div>
+
+    <div class="timetable" id="timetable">
+        <div>
+            <span id="prevDay">&lt;</span>
+            <h2>Today's Timetable</h2>
+            <span id="nextDay">&gt;</span>
+        </div>
+        <span class="closeBtn" onclick="timeTableAll()">X</span>
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Room No.</th>
+                    <th>Subject</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</main>
+{% endblock %}
+
+

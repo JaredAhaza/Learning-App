@@ -1,0 +1,76 @@
+{% extends 'includes/teacherbase.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block content %}
+
+    <main>
+        
+            <h1>Update Profile</h1>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="form-section" style="max-width: 800px; margin: 2rem auto;">
+                <div class="form-header">
+                    <span class="material-icons-sharp">person</span>
+                    <h2>Basic Information</h2>
+                </div>
+                <form method="POST" enctype="multipart/form-data" class="form-content">
+                    {% csrf_token %}
+                    
+                    <div class="row row-space">
+                        <div class="input-group">
+                            <label class="label">Phone Number</label>
+                            {% render_field form.phone_number class="input--style-4" %}
+                        </div>
+                    </div>
+
+                    <div class="row row-space">
+                        <div class="input-group">
+                            <label class="label">Birthday</label>
+                            {% render_field form.date_of_birth class="input--style-4" type="date" %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <div class="radio-group">
+                            {% for choice in form.gender %}
+                                <label class="radio-label">
+                                    {{ choice.tag }}
+                                    <span class="radio-text">{{ choice.choice_label }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        {% if form.gender.errors %}
+                            <div class="error-message">{{ form.gender.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row row-space">
+                        <div class="input-group">
+                            <label class="label">Profile Picture</label>
+                            {% render_field form.profile_picture class="input--style-4" %}
+                        </div>
+                    </div>
+
+                    <div class="row row-space">
+                        <div class="input-group">
+                            <label class="label">Bio</label>
+                            {% render_field form.bio class="input--style-4" rows="4" %}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        <span class="material-icons-sharp">save</span>
+                        Update Profile
+                    </button>
+                </form>
+            </div>
+    </main>
+{% endblock %}

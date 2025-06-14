@@ -1,0 +1,57 @@
+{% extends 'includes/teacherbase.html' %}
+{% load static %}
+{% block content %}
+
+
+        <main>
+            <h1>Your Courses and Units</h1>
+            
+            {% if courses_data %}
+                {% for course_id, course_info in courses_data.items %}
+                    <div class="course-section">
+                        <div class="course-header">
+                            <span class="material-icons-sharp">school</span>
+                            <h2>{{ course_info.course.course_name }}</h2>
+                            <span class="course-code">{{ course_info.course.course_code }}</span>
+                            <a href="{% url 'edit_course' course_info.course.course_id %}" class="btn-edit">
+                                <span class="material-icons-sharp">edit</span>
+                            </a>
+                        </div>
+                        
+                        {% for cohort_id, cohort_info in course_info.cohorts.items %}
+                            <div class="cohort-section">
+                                <div class="cohort-header">
+                                    <span class="material-icons-sharp">groups</span>
+                                    <h3>{{ cohort_info.cohort.name }}</h3>
+                                    <span class="cohort-dates">
+                                        {{ cohort_info.cohort.start_date|date:"M d, Y" }} - {{ cohort_info.cohort.end_date|date:"M d, Y" }}
+                                    </span>
+                                    <a href="{% url 'edit_cohort' cohort_info.cohort.cohort_id %}" class="btn-edit">
+                                        <span class="material-icons-sharp">edit</span>
+                                    </a>
+                                </div>
+                                
+                                <div class="units-grid">
+                                    {% for unit in cohort_info.units %}
+                                        <div class="unit-card">
+                                            <span class="material-icons-sharp">menu_book</span>
+                                            <h4>{{ unit.unit_name }}</h4>
+                                            <div class="unit-code">{{ unit.unit_code }}</div>
+                                            <p class="unit-description">{{ unit.description }}</p>
+                                            <a href="{% url 'edit_unit' unit.unit_id %}" class="btn-edit">
+                                                <span class="material-icons-sharp">edit</span>
+                                            </a>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-data">
+                    <p>No courses or units have been assigned to you yet.</p>
+                </div>
+            {% endif %}
+        </main>
+{% endblock %}

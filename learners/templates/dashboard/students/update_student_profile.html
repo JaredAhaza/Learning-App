@@ -1,0 +1,158 @@
+{% load static %}
+{% load widget_tweaks %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Student Profile</title>
+    <link rel="shortcut icon" href="{% static 'dashboard/images/logo.png' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'dashboard/style.css' %}">
+</head>
+<body>
+    <header>
+        <div class="logo" title="University Management System">
+            <img src="{% static 'dashboard/images/logo.png' %}" alt="">
+            <h2>U<span class="danger">M</span>S</h2>
+        </div>
+        <div class="navbar">
+            <a href="{% url 'student_dashboard' %}">
+                <span class="material-icons-sharp">home</span>
+                <h3>Dashboard</h3>
+            </a>
+            <a href="{% url 'student_logout' %}">
+                <span class="material-icons-sharp">logout</span>
+                <h3>Logout</h3>
+            </a>
+        </div>
+        <div id="profile-btn">
+            <span class="material-icons-sharp">person</span>
+        </div>
+        <div class="theme-toggler">
+            <span class="material-icons-sharp active">light_mode</span>
+            <span class="material-icons-sharp">dark_mode</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <aside>
+            <div class="profile">
+                <div class="top">
+                    <div class="profile-photo">
+                        {% if student_profile %}
+                            <img src="{{ student_profile.profile_picture.url }}" alt="">
+                        {% else %}
+                            <img src="{% static 'dashboard/images/profile-1.jpg' %}" alt="">
+                        {% endif %}
+                    </div>
+                    <div class="info">
+                        <p>Hey, <b>{{ student.user.get_full_name }}</b></p>
+                        <small class="text-muted">{{ student.student_id }}</small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main>
+            <div class="main-content">
+                <div class="form-section">
+                    <h2>Update Profile</h2>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="form-section" style="max-width: 800px; margin: 2rem auto;">
+                        <div class="form-header">
+                            <span class="material-icons-sharp">person</span>
+                            <h2>Basic Information</h2>
+                        </div>
+                        <form method="POST" enctype="multipart/form-data" class="form-content">
+                            {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+                            {% render_field form.phone_number class="form-control" %}
+                            {% if form.phone_number.errors %}
+                                <div class="error-message">{{ form.phone_number.errors }}</div>
+                            {% endif %}
+                        </div>
+    
+                        <div class="form-group">
+                            <label for="{{ form.date_of_birth.id_for_label }}">Birthday</label>
+                            {% render_field form.date_of_birth class="form-control" type="date" %}
+                            {% if form.date_of_birth.errors %}
+                                <div class="error-message">{{ form.date_of_birth.errors }}</div>
+                            {% endif %}
+                        </div>
+    
+                        <div class="form-group">
+                            <label>Gender</label>
+                            <div class="radio-group">
+                                {% for choice in form.gender %}
+                                    <label class="radio-label">
+                                        {{ choice.tag }}
+                                        <span class="radio-text">{{ choice.choice_label }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                            {% if form.gender.errors %}
+                                <div class="error-message">{{ form.gender.errors }}</div>
+                            {% endif %}
+                        </div>
+    
+                        <div class="form-group">
+                            <label for="{{ form.profile_picture.id_for_label }}">Profile Picture</label>
+                            {% render_field form.profile_picture class="form-control" %}
+                            {% if form.profile_picture.errors %}
+                                <div class="error-message">{{ form.profile_picture.errors }}</div>
+                            {% endif %}
+                        </div>
+    
+                        <div class="form-group">
+                            <label for="{{ form.bio.id_for_label }}">Bio</label>
+                            {% render_field form.bio class="form-control" rows="4" %}
+                            {% if form.bio.errors %}
+                                <div class="error-message">{{ form.bio.errors }}</div>
+                            {% endif %}
+                        </div>
+    
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <!-- Announcements Section -->
+        <div class="right">
+            <div class="announcements">
+                <h3>Announcements</h3>
+                <div class="announcement-list">
+                    {% if announcements %}
+                        {% for announcement in announcements %}
+                            <div class="announcement-card">
+                                <h4>{{ announcement.title }}</h4>
+                                <p>{{ announcement.content }}</p>
+                                <small>{{ announcement.date_posted }}</small>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No announcements at this time.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'dashboard/js/main.js' %}"></script>
+</body>
+</html>
