@@ -6,7 +6,7 @@
 
 <main>
     <h1>Welcome, {{ student.user.first_name }} {{ student.user.last_name }}</h1>
-    <h2>Available Cohorts</h2>
+    <h2>Assigned Cohort: {{ enrolled_cohort }}</h2>
         <div class="subjects">
                 <!-- Pending Requests Section -->
             {% if pending_requests %}
