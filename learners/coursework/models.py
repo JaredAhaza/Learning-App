@@ -65,11 +65,19 @@ class EnrollmentRequest(models.Model):
         return f"{self.student} - {self.cohort} ({self.status})"
 
 class Lesson(models.Model):
-    """Represents a lesson within a course."""
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    """Represents a lesson within a unit."""
+    unit = models.ForeignKey('Unit', on_delete=models.CASCADE, related_name='lessons')
     title = models.CharField(max_length=255)
     description = models.TextField()
+    content = HTMLField(blank=True, null=True)  # For rich text content
+    video_url = models.URLField(blank=True, null=True, help_text="URL to video content")
+    reading_materials = models.FileField(upload_to='lessons/materials/', blank=True, null=True, help_text="PDF or other reading materials")
+    estimated_completion_time = models.PositiveIntegerField(help_text="Estimated time to complete this lesson in minutes")
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['created_at']
 
     def get_completion_percentage(self, student):
         """Returns the completion percentage of the lesson for the given student."""
@@ -86,9 +94,24 @@ class Lesson(models.Model):
         completion_percentage = (completed_topics.count() / total_topics) * 100
         return completion_percentage
 
+    def get_formatted_duration(self):
+        """Returns the estimated completion time in a human-readable format."""
+        try:
+            # Handle integer value (minutes)
+            total_minutes = int(self.estimated_completion_time)
+            hours = total_minutes // 60
+            minutes = total_minutes % 60
+            
+            if hours > 0:
+                return f"{hours} hour{'s' if hours != 1 else ''} {minutes} minute{'s' if minutes != 1 else ''}"
+            return f"{minutes} minute{'s' if minutes != 1 else ''}"
+        except (ValueError, TypeError):
+            # If the value is not an integer, return a default message
+            return "Time not specified"
+
     def __str__(self):
-        return self.title
-    
+        return f"{self.title} - {self.unit.unit_name}"
+
 class LessonProgress(models.Model):
     """Represents a student's progress on a lesson."""
     student = models.ForeignKey(Student, on_delete=models.CASCADE)

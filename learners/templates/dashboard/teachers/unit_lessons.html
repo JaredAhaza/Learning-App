@@ -1,0 +1,285 @@
+{% extends 'includes/teacherbase.html' %}
+{% load static %}
+
+{% block content %}
+<main>
+    <h1>Manage Lessons - {{ unit.unit_name }}</h1>
+    
+    <div class="unit-info">
+        <p><b>Unit Code:</b> {{ unit.unit_code }}</p>
+        <p><b>Cohort:</b> {{ unit.cohort.name }}</p>
+        <p><b>Course:</b> {{ unit.cohort.course.course_name }}</p>
+    </div>
+
+    <div class="lessons-container">
+        <div class="lessons-header">
+            <h2>Lessons</h2>
+            <button class="btn btn-primary" onclick="openAddLessonModal()">
+                <span class="material-icons-sharp">add</span>
+                Add New Lesson
+            </button>
+        </div>
+
+        {% if lessons %}
+            <div class="lessons-grid">
+                {% for lesson in lessons %}
+                    <div class="lesson-card">
+                        <div class="lesson-header">
+                            <h3>{{ lesson.title }}</h3>
+                            <div class="lesson-actions">
+                                <a href="{% url 'teacher_lesson_view' lesson.id %}" class="btn btn-secondary">
+                                    <span class="material-icons-sharp">edit</span>
+                                </a>
+                                <button class="btn btn-danger" onclick="deleteLesson({{ lesson.id }})">
+                                    <span class="material-icons-sharp">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="lesson-description">{{ lesson.description|truncatechars:100 }}</p>
+                        <div class="lesson-meta">
+                            <span class="meta-item">
+                                <span class="material-icons-sharp">schedule</span>
+                                {{ lesson.get_formatted_duration }}
+                            </span>
+                            {% if lesson.video_url %}
+                                <span class="meta-item">
+                                    <span class="material-icons-sharp">video_library</span>
+                                    Video
+                                </span>
+                            {% endif %}
+                            {% if lesson.reading_materials %}
+                                <span class="meta-item">
+                                    <span class="material-icons-sharp">description</span>
+                                    Materials
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-lessons">No lessons have been added to this unit yet.</p>
+        {% endif %}
+    </div>
+</main>
+
+<!-- Add Lesson Modal -->
+<div id="addLessonModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add New Lesson</h2>
+            <span class="close" onclick="closeAddLessonModal()">&times;</span>
+        </div>
+        <form id="addLessonForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="content">Content</label>
+                <textarea id="content" name="content"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="video_url">Video URL</label>
+                <input type="url" id="video_url" name="video_url">
+            </div>
+            <div class="form-group">
+                <label for="reading_materials">Reading Materials</label>
+                <input type="file" id="reading_materials" name="reading_materials">
+            </div>
+            <div class="form-group">
+                <label for="estimated_completion_time">Estimated Completion Time (minutes)</label>
+                <input type="number" id="estimated_completion_time" name="estimated_completion_time" min="1" required>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeAddLessonModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Lesson</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .unit-info {
+        background: var(--color-white);
+        padding: var(--card-padding);
+        border-radius: var(--card-border-radius);
+        margin-bottom: 2rem;
+        box-shadow: var(--box-shadow);
+    }
+
+    .lessons-container {
+        background: var(--color-white);
+        padding: var(--card-padding);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--box-shadow);
+    }
+
+    .lessons-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .lessons-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .lesson-card {
+        background: var(--color-white);
+        border: 1px solid var(--color-light);
+        border-radius: var(--card-border-radius);
+        padding: 1.5rem;
+        transition: all 300ms ease;
+    }
+
+    .lesson-card:hover {
+        box-shadow: var(--box-shadow);
+    }
+
+    .lesson-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .lesson-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .lesson-description {
+        color: var(--color-dark-variant);
+        margin-bottom: 1rem;
+    }
+
+    .lesson-meta {
+        display: flex;
+        gap: 1rem;
+        color: var(--color-info-dark);
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .meta-item .material-icons-sharp {
+        font-size: 1.2rem;
+    }
+
+    .no-lessons {
+        text-align: center;
+        color: var(--color-dark-variant);
+        padding: 2rem;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: var(--color-white);
+        margin: 5% auto;
+        padding: 2rem;
+        width: 90%;
+        max-width: 600px;
+        border-radius: var(--card-border-radius);
+        position: relative;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .close {
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--color-dark-variant);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--color-dark-variant);
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.8rem;
+        border: 1px solid var(--color-light);
+        border-radius: var(--border-radius-1);
+        background: var(--color-background);
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+</style>
+
+<script>
+    function openAddLessonModal() {
+        document.getElementById('addLessonModal').style.display = 'block';
+    }
+
+    function closeAddLessonModal() {
+        document.getElementById('addLessonModal').style.display = 'none';
+    }
+
+    function deleteLesson(lessonId) {
+        if (confirm('Are you sure you want to delete this lesson?')) {
+            fetch(`/dashboard/lesson/${lessonId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error deleting lesson');
+                }
+            });
+        }
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('addLessonModal');
+        if (event.target == modal) {
+            closeAddLessonModal();
+        }
+    }
+</script>
+{% endblock %} 

@@ -10,7 +10,7 @@
             <div class="subjects">
                 {% if assigned_units %}
                     {% for unit in assigned_units %}
-                        <div class="unit-card">
+                        <a href="{% url 'unit_lessons' unit.unit_id %}" class="unit-card">
                             <span class="material-icons-sharp">menu_book</span>
                             <h3>{{ unit.unit_name }}</h3>
                             <p><b>Code:</b> {{ unit.unit_code }}</p>
@@ -19,7 +19,11 @@
                             {% if unit.description %}
                                 <p><b>Description:</b> {{ unit.description }}</p>
                             {% endif %}
-                        </div>
+                            <div class="unit-actions">
+                                <span class="material-icons-sharp">add_circle</span>
+                                <span>Manage Lessons</span>
+                            </div>
+                        </a>
                     {% endfor %}
                 {% else %}
                     <p>No units have been assigned to you yet.</p>
@@ -159,5 +163,39 @@
 
             
         </main>
+
+<style>
+    .unit-card {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        background: var(--color-white);
+        padding: var(--card-padding);
+        border-radius: var(--card-border-radius);
+        margin-top: 1rem;
+        box-shadow: var(--box-shadow);
+        transition: all 300ms ease;
+        position: relative;
+    }
+
+    .unit-card:hover {
+        box-shadow: none;
+        transform: translateY(5px);
+    }
+
+    .unit-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--color-light);
+        color: var(--color-primary);
+    }
+
+    .unit-actions .material-icons-sharp {
+        font-size: 1.2rem;
+    }
+</style>
 {% endblock %}
         

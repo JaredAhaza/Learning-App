@@ -2,10 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from accounts.models import *
 from accounts.forms import *
-from coursework.models import Enrollment, Unit, Course, Cohort, EnrollmentRequest
+from coursework.models import Enrollment, Unit, Course, Cohort, EnrollmentRequest, LessonProgress, Lesson, TopicProgress
 from coursework.forms import CourseForm, CohortForm, UnitForm
 from django.contrib import messages
 from django.utils import timezone
+from django.http import JsonResponse
 
 # Create your views here.
 @login_required
@@ -30,7 +31,28 @@ def student_dashboard(request):
         enrollment = Enrollment.objects.filter(student=student, status='active').select_related('cohort__course').first()
         enrolled_cohort = enrollment.cohort if enrollment else None
         enrolled_course = enrolled_cohort.course if enrolled_cohort else None
-        cohort_units = enrolled_cohort.units.all() if enrolled_cohort else []
+        
+        # Get units with progress
+        cohort_units = []
+        if enrolled_cohort:
+            units = enrolled_cohort.units.all()
+            for unit in units:
+                # Calculate unit progress
+                total_lessons = unit.lessons.count()
+                completed_lessons = LessonProgress.objects.filter(
+                    student=student,
+                    lesson__unit=unit,
+                    completed=True
+                ).count()
+                
+                progress_percentage = (completed_lessons / total_lessons) * 100 if total_lessons > 0 else 0
+                
+                cohort_units.append({
+                    'unit': unit,
+                    'progress': progress_percentage,
+                    'completed_lessons': completed_lessons,
+                    'total_lessons': total_lessons
+                })
 
         # Get pending enrollment requests
         pending_requests = EnrollmentRequest.objects.filter(
@@ -439,3 +461,282 @@ def manage_enrollment_requests(request):
         'enrollment_requests': enrollment_requests
     }
     return render(request, 'dashboard/teachers/manage_enrollment_requests.html', context)
+
+@login_required
+def unit_lessons(request, unit_id):
+    """View for managing lessons within a unit."""
+    if request.user.groups.filter(name='TEACHER').exists():
+        try:
+            teacher = Teacher.objects.get(user=request.user)
+            unit = get_object_or_404(Unit, unit_id=unit_id)
+            
+            # Check if the teacher is assigned to this unit
+            if unit.teacher != teacher:
+                messages.error(request, "You are not assigned to this unit.")
+                return redirect('teacher_dashboard')
+            
+            lessons = Lesson.objects.filter(unit=unit).order_by('created_at')
+            
+            if request.method == 'POST':
+                # Handle adding a new lesson
+                title = request.POST.get('title')
+                description = request.POST.get('description')
+                content = request.POST.get('content')
+                video_url = request.POST.get('video_url')
+                estimated_completion_time = request.POST.get('estimated_completion_time')
+                reading_materials = request.FILES.get('reading_materials')
+                
+                lesson = Lesson.objects.create(
+                    unit=unit,
+                    title=title,
+                    description=description,
+                    content=content,
+                    video_url=video_url,
+                    estimated_completion_time=estimated_completion_time,
+                    reading_materials=reading_materials
+                )
+                
+                messages.success(request, "Lesson added successfully!")
+                return redirect('unit_lessons', unit_id=unit_id)
+            
+            context = {
+                'unit': unit,
+                'lessons': lessons,
+            }
+            return render(request, 'dashboard/teachers/unit_lessons.html', context)
+            
+        except Teacher.DoesNotExist:
+            return redirect('teachersregister')
+        except Unit.DoesNotExist:
+            messages.error(request, "Unit not found.")
+            return redirect('teacher_dashboard')
+    else:
+        # Student view
+        try:
+            student = Student.objects.get(user=request.user)
+            unit = get_object_or_404(Unit, unit_id=unit_id)
+            
+            # Verify student is enrolled in the cohort that contains this unit
+            enrollment = Enrollment.objects.filter(
+                student=student,
+                cohort=unit.cohort,
+                status='active'
+            ).first()
+            
+            if not enrollment:
+                messages.error(request, 'You are not enrolled in this unit.')
+                return redirect('student_dashboard')
+                
+            # Get all lessons for this unit
+            lessons = unit.lessons.all().order_by('created_at')
+            
+            # Get progress for each lesson
+            lesson_progress = []
+            for lesson in lessons:
+                progress = LessonProgress.objects.filter(
+                    student=student,
+                    lesson=lesson
+                ).first()
+                
+                if not progress:
+                    progress = LessonProgress.objects.create(
+                        student=student,
+                        lesson=lesson
+                    )
+                
+                completion_percentage = lesson.get_completion_percentage(student)
+                lesson_progress.append({
+                    'lesson': lesson,
+                    'progress': progress,
+                    'completion_percentage': completion_percentage
+                })
+                
+        except Student.DoesNotExist:
+            return redirect('studentregister')
+            
+        context = {
+            'student': student,
+            'unit': unit,
+            'lesson_progress': lesson_progress
+        }
+        return render(request, 'dashboard/students/unit_lessons.html', context)
+
+@login_required
+def delete_lesson(request, lesson_id):
+    """View for deleting a lesson."""
+    if not request.user.groups.filter(name='TEACHER').exists():
+        return JsonResponse({'success': False, 'error': 'Permission denied'})
+    
+    try:
+        teacher = Teacher.objects.get(user=request.user)
+        lesson = Lesson.objects.get(id=lesson_id)
+        # Check if the teacher is assigned to the unit
+        if lesson.unit.teacher != teacher:
+            return JsonResponse({'success': False, 'error': 'Permission denied'})
+        
+        lesson.delete()
+        return JsonResponse({'success': True})
+    except Teacher.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Teacher not found'})
+    except Lesson.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Lesson not found'})
+
+@login_required
+def student_lesson_view(request, lesson_id):
+    """View for students to access a specific lesson."""
+    try:
+        student = Student.objects.get(user=request.user)
+        lesson = get_object_or_404(Lesson, id=lesson_id)
+        
+        # Verify student is enrolled in the unit's cohort
+        enrollment = Enrollment.objects.filter(
+            student=student,
+            cohort=lesson.unit.cohort,
+            status='active'
+        ).first()
+        
+        if not enrollment:
+            messages.error(request, 'You are not enrolled in this lesson.')
+            return redirect('student_dashboard')
+            
+        # Get or create lesson progress
+        lesson_progress, created = LessonProgress.objects.get_or_create(
+            student=student,
+            lesson=lesson,
+            defaults={'opened': True}
+        )
+        
+        # Get topics for this lesson
+        topics = lesson.topic_set.all()
+        topic_progress = []
+        for topic in topics:
+            progress, created = TopicProgress.objects.get_or_create(
+                student=student,
+                topic=topic
+            )
+            topic_progress.append({
+                'topic': topic,
+                'progress': progress
+            })
+            
+    except Student.DoesNotExist:
+        return redirect('studentregister')
+        
+    context = {
+        'student': student,
+        'lesson': lesson,
+        'lesson_progress': lesson_progress,
+        'topic_progress': topic_progress
+    }
+    return render(request, 'dashboard/students/lesson_view.html', context)
+
+@login_required
+def teacher_lesson_view(request, lesson_id):
+    """View for teachers to view and manage a specific lesson."""
+    try:
+        teacher = Teacher.objects.get(user=request.user)
+        lesson = get_object_or_404(Lesson, id=lesson_id)
+        
+        # Verify teacher is assigned to this unit
+        if lesson.unit.teacher != teacher:
+            messages.error(request, 'You are not assigned to this lesson.')
+            return redirect('teacher_dashboard')
+            
+        # Get all students enrolled in this lesson's cohort
+        enrolled_students = Enrollment.objects.filter(
+            cohort=lesson.unit.cohort,
+            status='active'
+        ).select_related('student', 'student__user')
+        
+        # Get progress for all students
+        student_progress = []
+        for enrollment in enrolled_students:
+            progress = LessonProgress.objects.filter(
+                student=enrollment.student,
+                lesson=lesson
+            ).first()
+            
+            if not progress:
+                progress = LessonProgress.objects.create(
+                    student=enrollment.student,
+                    lesson=lesson
+                )
+                
+            completion_percentage = lesson.get_completion_percentage(enrollment.student)
+            student_progress.append({
+                'student': enrollment.student,
+                'progress': progress,
+                'completion_percentage': completion_percentage
+            })
+            
+    except Teacher.DoesNotExist:
+        return redirect('teachersregister')
+        
+    context = {
+        'teacher': teacher,
+        'lesson': lesson,
+        'student_progress': student_progress
+    }
+    return render(request, 'dashboard/teachers/lesson_view.html', context)
+
+@login_required
+def complete_lesson(request, lesson_id):
+    """View for marking a lesson as complete."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+        
+    try:
+        student = Student.objects.get(user=request.user)
+        lesson = get_object_or_404(Lesson, id=lesson_id)
+        
+        # Verify student is enrolled in the unit's cohort
+        enrollment = Enrollment.objects.filter(
+            student=student,
+            cohort=lesson.unit.cohort,
+            status='active'
+        ).first()
+        
+        if not enrollment:
+            return JsonResponse({'success': False, 'error': 'You are not enrolled in this lesson.'})
+            
+        # Get or create lesson progress
+        lesson_progress, created = LessonProgress.objects.get_or_create(
+            student=student,
+            lesson=lesson
+        )
+        
+        # Mark lesson as complete
+        lesson_progress.completed = True
+        lesson_progress.save()
+        
+        # Mark all topics in this lesson as complete
+        topics = lesson.topic_set.all()
+        for topic in topics:
+            topic_progress, created = TopicProgress.objects.get_or_create(
+                student=student,
+                topic=topic
+            )
+            topic_progress.completed = True
+            topic_progress.save()
+        
+        # Calculate unit progress
+        unit = lesson.unit
+        total_lessons = unit.lessons.count()
+        completed_lessons = LessonProgress.objects.filter(
+            student=student,
+            lesson__unit=unit,
+            completed=True
+        ).count()
+        
+        unit_progress = (completed_lessons / total_lessons) * 100 if total_lessons > 0 else 0
+        
+        return JsonResponse({
+            'success': True,
+            'unit_id': unit.unit_id,
+            'unit_progress': unit_progress
+        })
+            
+    except Student.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Student not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

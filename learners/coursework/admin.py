@@ -14,8 +14,8 @@ class CourseAdmin(admin.ModelAdmin):
 
 
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ('title', 'course', 'created_at')
-    search_fields = ('title', 'course__title')
+    list_display = ('title', 'unit', 'created_at')
+    search_fields = ('title', 'unit')
 
 class TopicAdmin(admin.ModelAdmin):
     list_display = ('title', 'lesson', 'created_at')

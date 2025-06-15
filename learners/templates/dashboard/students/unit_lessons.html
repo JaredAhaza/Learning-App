@@ -1,0 +1,144 @@
+{% extends 'includes/base.html' %}
+{% load static %}
+
+{% block content %}
+<main>
+    <div class="header">
+        <h1>{{ unit.unit_name }}</h1>
+        <p class="text-muted">{{ unit.description }}</p>
+    </div>
+
+    <div class="lessons-container">
+        <div class="back-button">
+            <a href="{% url 'student_dashboard' %}" class="btn btn-outline-primary">
+
+            </a>
+        </div>
+        {% if lesson_progress %}
+            {% for item in lesson_progress %}
+                <div class="lesson-card">
+                    <div class="lesson-header">
+                        <h3>{{ item.lesson.title }}</h3>
+                        <div class="progress-indicator">
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {% if item.progress.completed %}100{% else %}{{ item.completion_percentage }}{% endif %}%"
+                                     aria-valuenow="{% if item.progress.completed %}100{% else %}{{ item.completion_percentage }}{% endif %}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {% if item.progress.completed %}100{% else %}{{ item.completion_percentage }}{% endif %}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="lesson-content">
+                        <p>{{ item.lesson.description }}</p>
+                        <div class="lesson-meta">
+                            <span class="estimated-time">
+                                <i class="material-icons">schedule</i>
+                                Estimated time: {{ item.lesson.get_formatted_duration }}
+                            </span>
+                            {% if item.lesson.video_url %}
+                                <span class="has-video">
+                                    <i class="material-icons">videocam</i>
+                                    Video available
+                                </span>
+                            {% endif %}
+                            {% if item.lesson.reading_materials %}
+                                <span class="has-materials">
+                                    <i class="material-icons">description</i>
+                                    Reading materials available
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="lesson-footer">
+                        <a href="{% url 'student_lesson_view' item.lesson.id %}" class="btn btn-primary">
+                            {% if item.progress.completed %}
+                                Review Lesson
+                            {% else %}
+                                Start Lesson
+                            {% endif %}
+                        </a>
+                        {% if item.progress.completed %}
+                            <span class="badge badge-success">Completed</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-lessons">
+                <p>No lessons have been added to this unit yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</main>
+
+<style>
+    .lessons-container {
+        padding: 20px;
+    }
+
+    .lesson-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .lesson-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .progress-indicator {
+        width: 100px;
+    }
+
+    .lesson-content {
+        margin-bottom: 15px;
+    }
+
+    .lesson-meta {
+        display: flex;
+        gap: 20px;
+        margin-top: 10px;
+        color: #666;
+    }
+
+    .lesson-meta span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .lesson-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .badge {
+        padding: 5px 10px;
+        border-radius: 15px;
+    }
+
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .no-lessons {
+        text-align: center;
+        padding: 40px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %} 
