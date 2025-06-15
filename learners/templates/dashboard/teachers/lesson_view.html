@@ -53,24 +53,18 @@
                     <div class="video-section">
                         <h3>Video Content</h3>
                         <div class="video-container">
-                            {% if 'youtube.com' in lesson.video_url or 'youtu.be' in lesson.video_url %}
-                                {% with video_id=lesson.video_url|youtube_id %}
-                                    {% if video_id %}
-                                        <iframe src="https://www.youtube.com/embed/{{ video_id }}" 
-                                                frameborder="0" 
-                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                                allowfullscreen>
-                                        </iframe>
-                                    {% else %}
-                                        <p class="text-muted">Invalid YouTube URL</p>
-                                    {% endif %}
-                                {% endwith %}
-                            {% else %}
-                                <iframe src="{{ lesson.video_url }}" 
+                            {% with embed_url=lesson.video_url|get_video_embed_url platform=lesson.video_url|get_video_platform %}
+                                {% if embed_url %}
+                                    <iframe 
+                                        src="{{ embed_url }}" 
                                         frameborder="0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                                         allowfullscreen>
-                                </iframe>
-                            {% endif %}
+                                    </iframe>
+                                {% else %}
+                                    <p class="text-muted">Invalid video URL</p>
+                                {% endif %}
+                            {% endwith %}
                         </div>
                     </div>
                 {% endif %}
