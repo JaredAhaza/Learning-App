@@ -1,0 +1,148 @@
+{% extends 'includes/base.html' %}
+{% load static %}
+
+{% block content %}
+<main>
+    <div class="container">
+        <h1>Online Classes - {{ unit.unit_name }}</h1>
+        
+        <!-- Online Classes List -->
+        <div class="online-classes-list">
+            {% if online_classes %}
+                {% for class in online_classes %}
+                    <div class="class-card">
+                        <div class="class-header">
+                            <h3>{{ class.title }}</h3>
+                            <span class="platform-badge {{ class.meeting_platform|lower }}">
+                                {{ class.get_meeting_platform_display }}
+                            </span>
+                        </div>
+                        <div class="class-details">
+                            <p class="description">{{ class.description }}</p>
+                            <div class="time-info">
+                                <p><strong>Start:</strong> {{ class.start_time|date:"M d, Y H:i" }}</p>
+                                <p><strong>Duration:</strong> {{ class.duration }} minutes</p>
+                                <p><strong>Status:</strong> 
+                                    <span class="status-badge {{ class.get_status }}">
+                                        {{ class.get_status|title }}
+                                    </span>
+                                </p>
+                            </div>
+                            {% if class.is_upcoming or class.is_ongoing %}
+                                <div class="meeting-link">
+                                    <a href="{{ class.meeting_link }}" target="_blank" class="btn btn-primary">
+                                        {% if class.is_ongoing %}
+                                            Join Now
+                                        {% else %}
+                                            Join Meeting
+                                        {% endif %}
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No online classes scheduled for this unit.</p>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .online-classes-list {
+        margin-top: 30px;
+    }
+
+    .class-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+        padding: 20px;
+    }
+
+    .class-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .platform-badge {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8em;
+        font-weight: 500;
+    }
+
+    .platform-badge.zoom {
+        background: #2D8CFF;
+        color: white;
+    }
+
+    .platform-badge.google_meet {
+        background: #00897B;
+        color: white;
+    }
+
+    .platform-badge.other {
+        background: #757575;
+        color: white;
+    }
+
+    .status-badge {
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+    }
+
+    .status-badge.upcoming {
+        background: #E3F2FD;
+        color: #1976D2;
+    }
+
+    .status-badge.ongoing {
+        background: #E8F5E9;
+        color: #2E7D32;
+    }
+
+    .status-badge.ended {
+        background: #FFEBEE;
+        color: #C62828;
+    }
+
+    .class-details {
+        margin-bottom: 15px;
+    }
+
+    .time-info {
+        margin: 10px 0;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background: #1976D2;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #1565C0;
+    }
+</style>
+{% endblock %} 

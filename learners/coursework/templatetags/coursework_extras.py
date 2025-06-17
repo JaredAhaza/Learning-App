@@ -101,4 +101,9 @@ def youtube_id(url):
     match = re.search(youtube_regex, url)
     if match:
         return match.group(1)
-    return None 
+    return None
+
+@register.filter
+def get_item(dictionary, key):
+    """Template filter to get an item from a dictionary using a key."""
+    return dictionary.get(key) 

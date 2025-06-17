@@ -2,13 +2,14 @@
 
 :root{
     --color-primary: #7380ec;
+    --color-primary-variant: #6777ef;
     --color-danger: #ff7782;
     --color-success: #41f1b6;
     --color-warning: #ffbb55;
     --color-white: #fff;
     --color-info: #7d8da1;
     --color-dark: #363949;
-    --color-light: rgba(132, 139, 200, 0.18);
+    --color-light: #f6f6f9;
     --color-dark-varient: #677483;
     --color-background: #f6f6f9;
     
@@ -1045,4 +1046,177 @@ main .timetable.active .closeBtn{
 .remove-unit-form {
     margin: 0;
     padding: 0;
+}
+
+/* Timetable Styles */
+.timetable-container {
+    background: var(--color-white);
+    padding: var(--card-padding);
+    border-radius: var(--card-border-radius);
+    margin-top: 1rem;
+    box-shadow: var(--box-shadow);
+}
+
+.timetable-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem;
+    background: var(--color-light);
+    border-radius: var(--card-border-radius);
+}
+
+.timetable-controls button {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: var(--card-border-radius);
+    background: var(--color-primary);
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 300ms ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.timetable-controls button:hover {
+    background: var(--color-primary-variant);
+    transform: translateY(-2px);
+}
+
+.timetable-controls h3 {
+    font-size: 1.2rem;
+    color: var(--color-dark);
+}
+
+.timetable-grid {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.timetable-grid th,
+.timetable-grid td {
+    border: 1px solid var(--color-light);
+    padding: 1rem;
+    text-align: center;
+}
+
+.timetable-grid th {
+    background: var(--color-primary);
+    color: white;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.time-column {
+    font-weight: bold;
+    background: var(--color-light);
+    color: var(--color-dark);
+}
+
+.timetable-cell {
+    min-height: 120px;
+    vertical-align: top;
+    position: relative;
+    transition: all 300ms ease;
+}
+
+.timetable-cell:hover {
+    background: var(--color-light);
+}
+
+.lesson-slot {
+    background: var(--color-primary);
+    color: white;
+    padding: 1rem;
+    border-radius: var(--card-border-radius);
+    margin: 0.25rem;
+    cursor: pointer;
+    transition: all 300ms ease;
+    box-shadow: var(--box-shadow);
+}
+
+.lesson-slot:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.lesson-slot.online {
+    background: var(--color-success);
+}
+
+.lesson-slot.prerecorded {
+    background: var(--color-warning);
+}
+
+.free-slot {
+    color: var(--color-dark);
+    opacity: 0.7;
+    cursor: pointer;
+    padding: 1rem;
+    border-radius: var(--card-border-radius);
+    transition: all 300ms ease;
+}
+
+.free-slot:hover {
+    background: var(--color-light);
+    opacity: 1;
+}
+
+.free-slot .material-icons-sharp {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.lesson-slot h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.lesson-slot p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.lesson-slot .btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: var(--card-border-radius);
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    transition: all 300ms ease;
+}
+
+.lesson-slot .btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge.online {
+    background: var(--color-success);
+    color: white;
+}
+
+.status-badge.prerecorded {
+    background: var(--color-warning);
+    color: white;
 }

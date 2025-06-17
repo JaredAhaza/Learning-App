@@ -19,10 +19,15 @@
                     <i class="material-icons">schedule</i>
                     Estimated time: {{ lesson.get_formatted_duration }}
                 </span>
-                {% if lesson.video_url %}
-                    <span class="has-video">
+                {% if lesson.class_type == 'ONLINE' %}
+                    <span class="online-class">
                         <i class="material-icons">videocam</i>
-                        Video available
+                        Online Class
+                    </span>
+                {% elif lesson.class_type == 'PRERECORDED' %}
+                    <span class="prerecorded-class">
+                        <i class="material-icons">movie</i>
+                        Prerecorded
                     </span>
                 {% endif %}
                 {% if lesson.reading_materials %}
@@ -34,8 +39,8 @@
             </div>
         </div>
         <div class="header-actions">
-            <button class="btn btn-primary" data-toggle="modal" data-target="#editLessonModal">
-                <i class="material-icons">edit</i> Edit Lesson
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editLessonModal">
+                <i class="material-icons-sharp">edit</i> Edit Lesson
             </button>
         </div>
     </div>
@@ -43,13 +48,26 @@
     <div class="lesson-content">
         <div class="row">
             <div class="col-md-8">
-                {% if lesson.content %}
-                    <div class="content-section">
-                        {{ lesson.content|safe }}
+                {% if lesson.class_type == 'ONLINE' %}
+                    <div class="online-class-section">
+                        <h3>Online Class Details</h3>
+                        <ul class="list-unstyled">
+                            <li><strong>Platform:</strong> {{ lesson.get_meeting_platform_display }}</li>
+                            <li><strong>Meeting Link:</strong> <a href="{{ lesson.meeting_link }}" target="_blank">Join Meeting</a></li>
+                            <li><strong>Start Time:</strong> {{ lesson.start_time|date:"M d, Y H:i" }}</li>
+                            <li><strong>Duration:</strong> {{ lesson.duration }} minutes</li>
+                            <li><strong>Status:</strong>
+                                {% if lesson.is_ongoing %}
+                                    <span class="badge badge-success">Ongoing</span>
+                                {% elif lesson.is_upcoming %}
+                                    <span class="badge badge-info">Upcoming</span>
+                                {% elif lesson.is_ended %}
+                                    <span class="badge badge-secondary">Ended</span>
+                                {% endif %}
+                            </li>
+                        </ul>
                     </div>
-                {% endif %}
-
-                {% if lesson.video_url %}
+                {% elif lesson.class_type == 'PRERECORDED' %}
                     <div class="video-section">
                         <h3>Video Content</h3>
                         <div class="video-container">
@@ -66,6 +84,12 @@
                                 {% endif %}
                             {% endwith %}
                         </div>
+                    </div>
+                {% endif %}
+
+                {% if lesson.content %}
+                    <div class="content-section">
+                        {{ lesson.content|safe }}
                     </div>
                 {% endif %}
 
@@ -180,7 +204,7 @@
         margin-bottom: 30px;
     }
 
-    .video-section, .materials-section {
+    .video-section, .materials-section, .online-class-section {
         margin-bottom: 30px;
     }
 

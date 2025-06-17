@@ -81,12 +81,32 @@
                 <textarea id="description" name="description" required></textarea>
             </div>
             <div class="form-group">
-                <label for="content">Content</label>
-                <textarea id="content" name="content"></textarea>
+                <label for="class_type">Class Type</label>
+                <select id="class_type" name="class_type" onchange="toggleClassFields()">
+                    <option value="ONLINE">Online</option>
+                    <option value="PRERECORDED">Prerecorded</option>
+                </select>
             </div>
-            <div class="form-group">
+            <div id="onlineClassFields" class="form-group">
+                <label for="meeting_platform">Meeting Platform</label>
+                <select id="meeting_platform" name="meeting_platform">
+                    <option value="ZOOM">Zoom</option>
+                    <option value="GOOGLE_MEET">Google Meet</option>
+                </select>
+                <label for="meeting_link">Meeting Link</label>
+                <input type="url" id="meeting_link" name="meeting_link">
+                <label for="start_time">Start Time</label>
+                <input type="datetime-local" id="start_time" name="start_time">
+                <label for="duration">Duration (minutes)</label>
+                <input type="number" id="duration" name="duration" min="1">
+            </div>
+            <div id="prerecordedClassFields" class="form-group" style="display: none;">
                 <label for="video_url">Video URL</label>
                 <input type="url" id="video_url" name="video_url">
+            </div>
+            <div class="form-group">
+                <label for="content">Content</label>
+                <textarea id="content" name="content"></textarea>
             </div>
             <div class="form-group">
                 <label for="reading_materials">Reading Materials</label>
@@ -202,6 +222,8 @@
         padding: 2rem;
         width: 90%;
         max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
         border-radius: var(--card-border-radius);
         position: relative;
     }
@@ -281,5 +303,22 @@
             closeAddLessonModal();
         }
     }
+
+    function toggleClassFields() {
+        const classType = document.getElementById('class_type').value;
+        const onlineFields = document.getElementById('onlineClassFields');
+        const prerecordedFields = document.getElementById('prerecordedClassFields');
+
+        if (classType === 'ONLINE') {
+            onlineFields.style.display = 'block';
+            prerecordedFields.style.display = 'none';
+        } else if (classType === 'PRERECORDED') {
+            onlineFields.style.display = 'none';
+            prerecordedFields.style.display = 'block';
+        }
+    }
+
+    // Call toggleClassFields on page load to set initial state
+    document.addEventListener('DOMContentLoaded', toggleClassFields);
 </script>
 {% endblock %} 

@@ -2,11 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from accounts.models import *
 from accounts.forms import *
-from coursework.models import Enrollment, Unit, Course, Cohort, EnrollmentRequest, LessonProgress, Lesson, TopicProgress
-from coursework.forms import CourseForm, CohortForm, UnitForm
+from coursework.models import Enrollment, Unit, Course, Cohort, EnrollmentRequest, LessonProgress, Lesson, TopicProgress, OnlineClass, TimeSlot
+from coursework.forms import CourseForm, CohortForm, UnitForm, OnlineClassForm
 from django.contrib import messages
 from django.utils import timezone
 from django.http import JsonResponse
+from datetime import datetime, timedelta
 
 # Create your views here.
 @login_required
@@ -31,6 +32,12 @@ def student_dashboard(request):
         enrollment = Enrollment.objects.filter(student=student, status='active').select_related('cohort__course').first()
         enrolled_cohort = enrollment.cohort if enrollment else None
         enrolled_course = enrolled_cohort.course if enrolled_cohort else None
+        
+        # Get completed enrollments for notification
+        completed_enrollments = Enrollment.objects.filter(
+            student=student,
+            status='completed'
+        ).select_related('cohort__course').order_by('-enrolled_at')
         
         # Get units with progress
         cohort_units = []
@@ -67,6 +74,70 @@ def student_dashboard(request):
             cohort_id__in=list(enrolled_cohort_ids) + list(requested_cohort_ids)
         ).select_related('course')
 
+        # Get timetable data
+        current_date = timezone.now().date()
+        start_of_week = current_date - timedelta(days=current_date.weekday())
+        
+        # Get all enrollments for the student
+        enrollments = student.enrollment_set.filter(status='active').select_related(
+            'cohort', 'cohort__course'
+        )
+        
+        # Get all units from the student's active enrollments
+        units = []
+        for enrollment in enrollments:
+            units.extend(enrollment.cohort.units.all())
+        
+        # Get all lessons from the student's units
+        lessons = Lesson.objects.filter(unit__in=units)
+        
+        # Get all time slots for these lessons
+        time_slots = TimeSlot.objects.filter(
+            lesson__in=lessons
+        ).select_related('lesson', 'lesson__unit', 'teacher')
+        
+        # Get all online classes for these units
+        online_classes = OnlineClass.objects.filter(
+            unit__in=units
+        ).select_related('unit')
+        
+        # Get today's schedule
+        today = timezone.now().strftime('%a').upper()[:3]
+        today_schedule = time_slots.filter(day=today).order_by('start_time')
+        
+        # Add today's online classes to today's schedule
+        today_online_classes = online_classes.filter(
+            start_time__date=timezone.now().date()
+        ).order_by('start_time')
+        
+        # Convert online classes to today's schedule format
+        for online_class in today_online_classes:
+            class_slot = online_class.to_timetable_slot()
+            if class_slot:
+                # Create a mock slot for today's schedule
+                today_slot = type('MockTodaySlot', (), {
+                    'get_start_time_display': lambda: class_slot.start_time,
+                    'lesson': class_slot.lesson
+                })()
+                today_schedule = list(today_schedule) + [today_slot]
+        
+        # Organize time slots by day and time
+        schedule = {}
+        for day, _ in TimeSlot.DAYS_OF_WEEK:
+            schedule[day] = {}
+            for time, _ in TimeSlot.TIME_SLOTS:
+                schedule[day][time] = None
+        
+        # Add TimeSlot data
+        for slot in time_slots:
+            schedule[slot.day][slot.start_time] = slot
+        
+        # Add OnlineClass data to schedule
+        for online_class in online_classes:
+            class_slot = online_class.to_timetable_slot()
+            if class_slot and class_slot.day in schedule and class_slot.start_time in schedule[class_slot.day]:
+                schedule[class_slot.day][class_slot.start_time] = class_slot
+
     except Student.DoesNotExist:
         return redirect('studentregister')
 
@@ -78,6 +149,12 @@ def student_dashboard(request):
         'cohort_units': cohort_units,
         'pending_requests': pending_requests,
         'available_cohorts': available_cohorts,
+        'completed_enrollments': completed_enrollments,
+        'days_of_week': TimeSlot.DAYS_OF_WEEK,
+        'time_slots': TimeSlot.TIME_SLOTS,
+        'schedule': schedule,
+        'today_schedule': today_schedule,
+        'current_week': f"Week of {start_of_week.strftime('%B %d, %Y')}",
     }
     return render(request, 'dashboard/students/student_dashboard.html', context)
 
@@ -151,8 +228,62 @@ def teacher_dashboard(request):
         except TeacherProfile.DoesNotExist:
             teacher_profile = None
             
+        # Handle POST requests for enrollment request actions
+        if request.method == 'POST':
+            request_id = request.POST.get('request_id')
+            action = request.POST.get('action')
+            notes = request.POST.get('notes', '')
+            
+            if request_id and action:
+                # Get teacher's cohorts to verify access
+                teacher_cohorts = Cohort.objects.filter(units__teacher=teacher).distinct()
+                
+                try:
+                    enrollment_request = EnrollmentRequest.objects.get(
+                        id=request_id,
+                        cohort__in=teacher_cohorts,
+                        status='pending'
+                    )
+                    
+                    if action == 'approve':
+                        # Get student's current active enrollment
+                        current_enrollment = Enrollment.objects.filter(
+                            student=enrollment_request.student,
+                            status='active'
+                        ).first()
+                        
+                        if current_enrollment:
+                            # Update status of current enrollment to 'completed'
+                            current_enrollment.status = 'completed'
+                            current_enrollment.save()
+                        
+                        # Create new enrollment
+                        new_enrollment = Enrollment.objects.create(
+                            student=enrollment_request.student,
+                            cohort=enrollment_request.cohort,
+                            status='active'
+                        )
+                        
+                        # Update enrollment request status
+                        enrollment_request.status = 'approved'
+                        messages.success(request, 'Enrollment request approved successfully!')
+                        
+                    elif action == 'reject':
+                        enrollment_request.status = 'rejected'
+                        messages.success(request, 'Enrollment request rejected successfully!')
+                    
+                    enrollment_request.notes = notes
+                    enrollment_request.reviewed_by = teacher
+                    enrollment_request.reviewed_at = timezone.now()
+                    enrollment_request.save()
+                    
+                except EnrollmentRequest.DoesNotExist:
+                    messages.error(request, 'Enrollment request not found!')
+                
+                return redirect('teacher_dashboard')
+            
         # Get all units assigned to this teacher with related data
-        assigned_units = Unit.objects.filter(teacher=teacher).select_related('cohort', 'cohort__course')
+        assigned_units = Unit.objects.filter(teacher=teacher).select_related('cohort', 'cohort__course').prefetch_related('lessons')
         
         # Get all enrollments for the cohorts of the teacher's units
         all_enrollments = []
@@ -175,6 +306,54 @@ def teacher_dashboard(request):
                     'course_name': unit.cohort.course.course_name,
                     'status': enrollment.status
                 })
+        
+        # Get enrollment requests for the teacher's cohorts (limited to 3 most recent)
+        teacher_cohorts = Cohort.objects.filter(units__teacher=teacher).distinct()
+        enrollment_requests = EnrollmentRequest.objects.filter(
+            cohort__in=teacher_cohorts,
+            status='pending'
+        ).select_related(
+            'student',
+            'student__user',
+            'cohort',
+            'cohort__course'
+        ).order_by('-requested_at')[:3]
+        
+        # Get timetable data
+        current_date = timezone.now().date()
+        start_of_week = current_date - timedelta(days=current_date.weekday())
+        
+        # Get all lessons for the teacher
+        lessons = Lesson.objects.filter(teacher=teacher)
+        
+        # Get all time slots for the teacher's lessons
+        time_slots = TimeSlot.objects.filter(
+            teacher=teacher,
+            lesson__in=lessons
+        ).select_related('lesson', 'lesson__unit')
+        
+        # Get all online classes for the teacher's units
+        online_classes = OnlineClass.objects.filter(
+            unit__teacher=teacher
+        ).select_related('unit')
+        
+        # Organize time slots by day and time
+        schedule = {}
+        for day, _ in TimeSlot.DAYS_OF_WEEK:
+            schedule[day] = {}
+            for time, _ in TimeSlot.TIME_SLOTS:
+                schedule[day][time] = None
+        
+        # Add TimeSlot data
+        for slot in time_slots:
+            schedule[slot.day][slot.start_time] = slot
+        
+        # Add OnlineClass data to schedule
+        for online_class in online_classes:
+            class_slot = online_class.to_timetable_slot()
+            if class_slot and class_slot.day in schedule and class_slot.start_time in schedule[class_slot.day]:
+                schedule[class_slot.day][class_slot.start_time] = class_slot
+
     except Teacher.DoesNotExist:
         return redirect('teachersregister')
         
@@ -182,10 +361,14 @@ def teacher_dashboard(request):
         'teacher': teacher, 
         'teacher_profile': teacher_profile,
         'assigned_units': assigned_units,
-        'all_enrollments': all_enrollments
+        'all_enrollments': all_enrollments,
+        'enrollment_requests': enrollment_requests,
+        'days_of_week': TimeSlot.DAYS_OF_WEEK,
+        'time_slots': TimeSlot.TIME_SLOTS,
+        'schedule': schedule,
+        'current_week': f"Week of {start_of_week.strftime('%B %d, %Y')}",
     }
     return render(request, 'dashboard/teachers/teacher_dashboard.html', context)
-
 
 @login_required
 def update_teacher_profile(request):
@@ -229,6 +412,8 @@ def teacher_courses(request):
         assigned_units = Unit.objects.filter(teacher=teacher).select_related(
             'cohort',
             'cohort__course'
+        ).prefetch_related(
+            'lessons'
         ).order_by('cohort__course__course_name', 'cohort__name', 'unit_name')
         
         # Organize data by course
@@ -249,7 +434,12 @@ def teacher_courses(request):
                     'units': []
                 }
             
-            courses_data[course.course_id]['cohorts'][cohort.cohort_id]['units'].append(unit)
+            # Get lessons for this unit
+            unit_with_lessons = {
+                'unit': unit,
+                'lessons': unit.lessons.all()
+            }
+            courses_data[course.course_id]['cohorts'][cohort.cohort_id]['units'].append(unit_with_lessons)
             
     except Teacher.DoesNotExist:
         return redirect('teachersregister')
@@ -430,12 +620,32 @@ def manage_enrollment_requests(request):
                 )
                 
                 if action == 'approve':
-                    # Create enrollment
-                    Enrollment.objects.create(
+                    # Get student's current active enrollment
+                    current_enrollment = Enrollment.objects.filter(
+                        student=enrollment_request.student,
+                        status='active'
+                    ).first()
+                    
+                    if current_enrollment:
+                        # Update status of current enrollment to 'completed'
+                        current_enrollment.status = 'completed'
+                        current_enrollment.save()
+                        
+                        # Add a one-time message for the student about cohort change
+                        messages.info(
+                            request, 
+                            f'You have been moved from {current_enrollment.cohort.name} to {enrollment_request.cohort.name}. Your progress has been preserved.',
+                            extra_tags='cohort_change'
+                        )
+                    
+                    # Create new enrollment
+                    new_enrollment = Enrollment.objects.create(
                         student=enrollment_request.student,
                         cohort=enrollment_request.cohort,
                         status='active'
                     )
+                    
+                    # Update enrollment request status
                     enrollment_request.status = 'approved'
                     messages.success(request, 'Enrollment request approved successfully!')
                     
@@ -468,6 +678,11 @@ def unit_lessons(request, unit_id):
     if request.user.groups.filter(name='TEACHER').exists():
         try:
             teacher = Teacher.objects.get(user=request.user)
+            try:
+                teacher_profile = TeacherProfile.objects.get(teacher=teacher)
+            except TeacherProfile.DoesNotExist:
+                teacher_profile = None
+                
             unit = get_object_or_404(Unit, unit_id=unit_id)
             
             # Check if the teacher is assigned to this unit
@@ -500,6 +715,8 @@ def unit_lessons(request, unit_id):
                 return redirect('unit_lessons', unit_id=unit_id)
             
             context = {
+                'teacher': teacher,
+                'teacher_profile': teacher_profile,
                 'unit': unit,
                 'lessons': lessons,
             }
@@ -514,6 +731,11 @@ def unit_lessons(request, unit_id):
         # Student view
         try:
             student = Student.objects.get(user=request.user)
+            try:
+                student_profile = StudentProfile.objects.get(student=student)
+            except StudentProfile.DoesNotExist:
+                student_profile = None
+                
             unit = get_object_or_404(Unit, unit_id=unit_id)
             
             # Verify student is enrolled in the cohort that contains this unit
@@ -556,6 +778,7 @@ def unit_lessons(request, unit_id):
             
         context = {
             'student': student,
+            'student_profile': student_profile,
             'unit': unit,
             'lesson_progress': lesson_progress
         }
@@ -586,6 +809,11 @@ def student_lesson_view(request, lesson_id):
     """View for students to access a specific lesson."""
     try:
         student = Student.objects.get(user=request.user)
+        try:
+            student_profile = StudentProfile.objects.get(student=student)
+        except StudentProfile.DoesNotExist:
+            student_profile = None
+            
         lesson = get_object_or_404(Lesson, id=lesson_id)
         
         # Verify student is enrolled in the unit's cohort
@@ -624,6 +852,7 @@ def student_lesson_view(request, lesson_id):
         
     context = {
         'student': student,
+        'student_profile': student_profile,
         'lesson': lesson,
         'lesson_progress': lesson_progress,
         'topic_progress': topic_progress
@@ -635,6 +864,11 @@ def teacher_lesson_view(request, lesson_id):
     """View for teachers to view and manage a specific lesson."""
     try:
         teacher = Teacher.objects.get(user=request.user)
+        try:
+            teacher_profile = TeacherProfile.objects.get(teacher=teacher)
+        except TeacherProfile.DoesNotExist:
+            teacher_profile = None
+            
         lesson = get_object_or_404(Lesson, id=lesson_id)
         
         # Verify teacher is assigned to this unit
@@ -674,6 +908,7 @@ def teacher_lesson_view(request, lesson_id):
         
     context = {
         'teacher': teacher,
+        'teacher_profile': teacher_profile,
         'lesson': lesson,
         'student_progress': student_progress
     }
@@ -740,3 +975,101 @@ def complete_lesson(request, lesson_id):
         return JsonResponse({'success': False, 'error': 'Student not found'})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+def unit_online_classes(request, unit_id):
+    """View for managing online classes within a unit."""
+    if request.user.groups.filter(name='TEACHER').exists():
+        try:
+            teacher = Teacher.objects.get(user=request.user)
+            try:
+                teacher_profile = TeacherProfile.objects.get(teacher=teacher)
+            except TeacherProfile.DoesNotExist:
+                teacher_profile = None
+                
+            unit = get_object_or_404(Unit, unit_id=unit_id)
+            
+            # Check if the teacher is assigned to this unit
+            if unit.teacher != teacher:
+                messages.error(request, "You are not assigned to this unit.")
+                return redirect('teacher_dashboard')
+            
+            online_classes = OnlineClass.objects.filter(unit=unit).order_by('-start_time')
+            
+            if request.method == 'POST':
+                form = OnlineClassForm(request.POST)
+                if form.is_valid():
+                    online_class = form.save(commit=False)
+                    online_class.unit = unit
+                    online_class.save()
+                    messages.success(request, "Online class added successfully!")
+                    return redirect('unit_online_classes', unit_id=unit_id)
+            else:
+                form = OnlineClassForm()
+            
+            context = {
+                'teacher': teacher,
+                'teacher_profile': teacher_profile,
+                'unit': unit,
+                'online_classes': online_classes,
+                'form': form,
+            }
+            return render(request, 'dashboard/teachers/unit_online_classes.html', context)
+            
+        except Teacher.DoesNotExist:
+            return redirect('teachersregister')
+    else:
+        # Student view
+        try:
+            student = Student.objects.get(user=request.user)
+            try:
+                student_profile = StudentProfile.objects.get(student=student)
+            except StudentProfile.DoesNotExist:
+                student_profile = None
+                
+            unit = get_object_or_404(Unit, unit_id=unit_id)
+            
+            # Verify student is enrolled in the cohort that contains this unit
+            enrollment = Enrollment.objects.filter(
+                student=student,
+                cohort=unit.cohort,
+                status='active'
+            ).first()
+            
+            if not enrollment:
+                messages.error(request, 'You are not enrolled in this unit.')
+                return redirect('student_dashboard')
+                
+            # Get all online classes for this unit
+            online_classes = unit.online_classes.all().order_by('-start_time')
+            
+        except Student.DoesNotExist:
+            return redirect('studentregister')
+            
+        context = {
+            'student': student,
+            'student_profile': student_profile,
+            'unit': unit,
+            'online_classes': online_classes
+        }
+        return render(request, 'dashboard/students/unit_online_classes.html', context)
+
+@login_required
+def delete_online_class(request, class_id):
+    """View for deleting an online class."""
+    if not request.user.groups.filter(name='TEACHER').exists():
+        return JsonResponse({'success': False, 'error': 'Permission denied'})
+    
+    try:
+        teacher = Teacher.objects.get(user=request.user)
+        online_class = OnlineClass.objects.get(id=class_id)
+        # Check if the teacher is assigned to the unit
+        if online_class.unit.teacher != teacher:
+            return JsonResponse({'success': False, 'error': 'Permission denied'})
+        
+        online_class.delete()
+        return JsonResponse({'success': True})
+    except Teacher.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Teacher not found'})
+    except OnlineClass.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Online class not found'})

@@ -5,6 +5,11 @@
 
         <main>
             <h1>Your Courses and Units</h1>
+
+            <a href="/add_course">
+                <span class="material-icons-sharp">add_circle</span>
+                <h3>Add Course</h3>
+            </a>
             
             {% if courses_data %}
                 {% for course_id, course_info in courses_data.items %}
@@ -32,15 +37,44 @@
                                 </div>
                                 
                                 <div class="units-grid">
-                                    {% for unit in cohort_info.units %}
+                                    {% for unit_data in cohort_info.units %}
                                         <div class="unit-card">
                                             <span class="material-icons-sharp">menu_book</span>
-                                            <h4>{{ unit.unit_name }}</h4>
-                                            <div class="unit-code">{{ unit.unit_code }}</div>
-                                            <p class="unit-description">{{ unit.description }}</p>
-                                            <a href="{% url 'edit_unit' unit.unit_id %}" class="btn-edit">
+                                            <h4>{{ unit_data.unit.unit_name }}</h4>
+                                            <div class="unit-code">{{ unit_data.unit.unit_code }}</div>
+                                            <p class="unit-description">{{ unit_data.unit.description }}</p>
+                                            <a href="{% url 'edit_unit' unit_data.unit.unit_id %}" class="btn-edit">
                                                 <span class="material-icons-sharp">edit</span>
                                             </a>
+                                            
+                                            {% if unit_data.lessons %}
+                                                <div class="lessons-section">
+                                                    <h5>Lessons</h5>
+                                                    <ul class="lessons-list">
+                                                        {% for lesson in unit_data.lessons %}
+                                                            <li class="lesson-item">
+                                                                <div class="lesson-info">
+                                                                    <span class="material-icons-sharp">article</span>
+                                                                    <span class="lesson-title">{{ lesson.title }}</span>
+                                                                    <span class="lesson-duration">{{ lesson.get_formatted_duration }}</span>
+                                                                </div>
+                                                                <div class="lesson-actions">
+                                                                    <a href="{% url 'unit_lessons' unit_data.unit.unit_id %}" class="btn-edit-small">
+                                                                        <span class="material-icons-sharp">edit</span>
+                                                                    </a>
+                                                                    <a href="{% url 'teacher_lesson_view' lesson.id %}" class="btn-view-small">
+                                                                        <span class="material-icons-sharp">visibility</span>
+                                                                    </a>
+                                                                </div>
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% else %}
+                                                <div class="no-lessons">
+                                                    <p>No lessons added yet</p>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     {% endfor %}
                                 </div>
@@ -54,4 +88,73 @@
                 </div>
             {% endif %}
         </main>
+
+        <style>
+            .lessons-section {
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px solid #eee;
+            }
+
+            .lessons-section h5 {
+                margin-bottom: 0.5rem;
+                color: #666;
+            }
+
+            .lessons-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .lesson-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.5rem;
+                margin-bottom: 0.5rem;
+                background: #f8f9fa;
+                border-radius: 4px;
+            }
+
+            .lesson-info {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .lesson-title {
+                font-weight: 500;
+            }
+
+            .lesson-duration {
+                font-size: 0.8rem;
+                color: #666;
+                margin-left: 0.5rem;
+            }
+
+            .lesson-actions {
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            .btn-edit-small, .btn-view-small {
+                padding: 0.25rem;
+                color: #666;
+                text-decoration: none;
+            }
+
+            .btn-edit-small:hover, .btn-view-small:hover {
+                color: #333;
+            }
+
+            .no-lessons {
+                margin-top: 1rem;
+                padding: 0.5rem;
+                background: #f8f9fa;
+                border-radius: 4px;
+                text-align: center;
+                color: #666;
+            }
+        </style>
 {% endblock %}

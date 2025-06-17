@@ -1,5 +1,6 @@
 {% extends 'includes/teacherbase.html' %}
 {% load static %}
+{% load coursework_extras %}
 
 {% block content %}
 
@@ -19,9 +20,10 @@
                             {% if unit.description %}
                                 <p><b>Description:</b> {{ unit.description }}</p>
                             {% endif %}
+                            <br>
                             <div class="unit-actions">
                                 <span class="material-icons-sharp">add_circle</span>
-                                <span>Manage Lessons</span>
+                                <i>Manage Lessons</i>
                             </div>
                         </a>
                     {% endfor %}
@@ -70,8 +72,12 @@
             </div>
 
             <br>
-            <h1>Manage Enrollment Requests</h1>
-            <div class="subjects">
+            <div class="enrollment-requests-section">
+                <h1>Manage Enrollment Requests</h1>
+                <a href="{% url 'manage_enrollment_requests' %}">
+                    <span class="material-icons-sharp">assignment</span>
+                    <h3>Manage Requests</h3>
+                </a>
                 
                 {% if messages %}
                 <div class="messages">
@@ -119,10 +125,54 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    <div class="view-all-link">
+                        <a href="{% url 'manage_enrollment_requests' %}" class="btn btn-primary">View All Requests</a>
+                    </div>
                 </div>
                 {% else %}
                 <div class="alert alert-info">
                     No pending enrollment requests found.
+                </div>
+                {% endif %}
+            </div>
+
+            <h1>Manage Time Slots</h1>
+            <div class="time-slots-section">
+                <div class="time-slots-header">
+                    <h3>Add Time Slots for Your Lessons</h3>
+                    <p>Schedule your lessons in the timetable by adding time slots for each lesson.</p>
+                </div>
+                
+                {% if assigned_units %}
+                <div class="lessons-grid">
+                    {% for unit in assigned_units %}
+                        {% if unit.lessons.all %}
+                            <div class="unit-lessons">
+                                <h4>{{ unit.unit_name }}</h4>
+                                <div class="lessons-list">
+                                    {% for lesson in unit.lessons.all %}
+                                    <div class="lesson-item">
+                                        <div class="lesson-info">
+                                            <h5>{{ lesson.title }}</h5>
+                                            <p><strong>Duration:</strong> {{ lesson.get_formatted_duration }}</p>
+                                            <p><strong>Type:</strong> {{ lesson.get_class_type_display }}</p>
+                                        </div>
+                                        <div class="lesson-actions">
+                                            <a href="{% url 'add_time_slot' lesson.id %}" class="btn btn-primary btn-sm">
+                                                <span class="material-icons-sharp">schedule</span>
+                                                Add Time Slot
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    No units have been assigned to you yet.
                 </div>
                 {% endif %}
             </div>
@@ -161,6 +211,52 @@
                 </div>
             </div>
 
+            <h1>Weekly Timetable</h1>
+            <div class="timetable-container">
+                <div class="timetable-controls">
+                    <button id="prevWeek" class="btn btn-primary">&lt; Previous Week</button>
+                    <h3 id="currentWeek">{{ current_week }}</h3>
+                    <button id="nextWeek" class="btn btn-primary">Next Week &gt;</button>
+                </div>
+                <div class="timetable">
+                    <table class="timetable-grid">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                {% for day in days_of_week %}
+                                <th>{{ day.1 }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for time_slot in time_slots %}
+                            <tr>
+                                <td class="time-column">{{ time_slot.1 }}</td>
+                                {% for day in days_of_week %}
+                                <td class="timetable-cell" data-day="{{ day.0 }}" data-time="{{ time_slot.0 }}">
+                                    {% with slot=schedule|get_item:day.0|get_item:time_slot.0 %}
+                                    {% if slot %}
+                                        <div class="lesson-slot {% if slot.lesson.class_type == 'ONLINE' %}online{% else %}prerecorded{% endif %}">
+                                            <h4>{{ slot.lesson.title }}</h4>
+                                            {% if slot.lesson.class_type == 'ONLINE' %}
+                                            <a href="{{ slot.lesson.meeting_link }}" target="_blank" class="btn btn-sm btn-primary">Join Class</a>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <div class="free-slot">
+                                            <span class="material-icons-sharp">event_available</span>
+                                            <p>Free</p>
+                                        </div>
+                                    {% endif %}
+                                    {% endwith %}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
             
         </main>
 
@@ -195,6 +291,239 @@
 
     .unit-actions .material-icons-sharp {
         font-size: 1.2rem;
+    }
+
+    /* Timetable Styles */
+    .timetable-container {
+        background: var(--color-white);
+        padding: var(--card-padding);
+        border-radius: var(--card-border-radius);
+        margin-top: 1rem;
+        box-shadow: var(--box-shadow);
+    }
+
+    .timetable-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .timetable-grid {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .timetable-grid th,
+    .timetable-grid td {
+        border: 1px solid var(--color-light);
+        padding: 0.5rem;
+        text-align: center;
+    }
+
+    .timetable-grid th {
+        background: var(--color-primary);
+        color: white;
+    }
+
+    .time-column {
+        font-weight: bold;
+        background: var(--color-light);
+    }
+
+    .timetable-cell {
+        min-height: 100px;
+        vertical-align: top;
+    }
+
+    .lesson-slot {
+        background: var(--color-primary);
+        color: white;
+        padding: 0.5rem;
+        border-radius: 4px;
+        margin: 0.25rem;
+    }
+
+    .lesson-slot.online {
+        background: var(--color-success);
+    }
+
+    .lesson-slot.prerecorded {
+        background: var(--color-warning);
+    }
+
+    .free-slot {
+        color: var(--color-dark);
+        opacity: 0.7;
+    }
+
+    .free-slot .material-icons-sharp {
+        font-size: 1.5rem;
+    }
+
+    .lesson-slot h4 {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .lesson-slot p {
+        margin: 0.25rem 0;
+        font-size: 0.8rem;
+    }
+
+    /* Enrollment Requests Styles */
+    .enrollment-requests-section {
+        background: var(--color-white);
+        padding: var(--card-padding);
+        border-radius: var(--card-border-radius);
+        margin-top: 1rem;
+        box-shadow: var(--box-shadow);
+    }
+
+    .enrollment-requests-section h1 {
+        margin-bottom: 1rem;
+        color: var(--color-dark);
+    }
+
+    .enrollment-requests-section .table {
+        margin-bottom: 1rem;
+    }
+
+    .enrollment-requests-section .table th {
+        background: var(--color-primary);
+        color: white;
+        border: none;
+    }
+
+    .enrollment-requests-section .table td {
+        vertical-align: middle;
+        border-color: var(--color-light);
+    }
+
+    .enrollment-requests-section .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+        margin: 0 0.25rem;
+    }
+
+    .enrollment-requests-section .alert {
+        margin-bottom: 1rem;
+    }
+
+    .view-all-link {
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .view-all-link .btn {
+        background: var(--color-primary);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        transition: all 300ms ease;
+    }
+
+    .view-all-link .btn:hover {
+        background: var(--color-dark);
+        transform: translateY(-2px);
+    }
+
+    /* Time Slots Management Styles */
+    .time-slots-section {
+        background: var(--color-white);
+        padding: var(--card-padding);
+        border-radius: var(--card-border-radius);
+        margin-top: 1rem;
+        box-shadow: var(--box-shadow);
+    }
+
+    .time-slots-header {
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .time-slots-header h3 {
+        color: var(--color-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .time-slots-header p {
+        color: var(--color-dark-variant);
+        margin: 0;
+    }
+
+    .lessons-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .unit-lessons {
+        border: 1px solid var(--color-light);
+        border-radius: var(--card-border-radius);
+        padding: 1rem;
+    }
+
+    .unit-lessons h4 {
+        color: var(--color-primary);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--color-light);
+    }
+
+    .lessons-list {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .lesson-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: var(--color-light);
+        border-radius: 8px;
+        transition: all 300ms ease;
+    }
+
+    .lesson-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .lesson-info h5 {
+        margin: 0 0 0.5rem 0;
+        color: var(--color-dark);
+        font-size: 1rem;
+    }
+
+    .lesson-info p {
+        margin: 0.25rem 0;
+        font-size: 0.9rem;
+        color: var(--color-dark-variant);
+    }
+
+    .lesson-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .lesson-actions .btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 300ms ease;
+    }
+
+    .lesson-actions .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .lesson-actions .material-icons-sharp {
+        font-size: 1rem;
     }
 </style>
 {% endblock %}

@@ -2,6 +2,7 @@
 from django.db import models
 from accounts.models import StudentProfile, Student
 from tinymce.models import HTMLField
+from django.utils import timezone
 
 class Course(models.Model):
     course_id = models.CharField(max_length=10, primary_key=True)
@@ -64,20 +65,138 @@ class EnrollmentRequest(models.Model):
     def __str__(self):
         return f"{self.student} - {self.cohort} ({self.status})"
 
+class TimeSlot(models.Model):
+    """Represents a time slot in the timetable."""
+    DAYS_OF_WEEK = [
+        ('MON', 'Monday'),
+        ('TUE', 'Tuesday'),
+        ('WED', 'Wednesday'),
+        ('THU', 'Thursday'),
+        ('FRI', 'Friday'),
+    ]
+    
+    TIME_SLOTS = [
+        ('07:00', '07:00 AM'),
+        ('08:00', '08:00 AM'),
+        ('09:00', '09:00 AM'),
+        ('10:00', '10:00 AM'),
+        ('11:00', '11:00 AM'),
+        ('12:00', '12:00 PM'),
+        ('13:00', '01:00 PM'),
+        ('14:00', '02:00 PM'),
+        ('15:00', '03:00 PM'),
+        ('16:00', '04:00 PM'),
+        ('17:00', '05:00 PM'),
+        ('18:00', '06:00 PM'),
+    ]
+
+    day = models.CharField(max_length=3, choices=DAYS_OF_WEEK)
+    start_time = models.CharField(max_length=5, choices=TIME_SLOTS)
+    end_time = models.CharField(max_length=5, choices=TIME_SLOTS, blank=True, null=True)
+    lesson = models.ForeignKey('Lesson', on_delete=models.CASCADE, related_name='time_slots')
+    teacher = models.ForeignKey('accounts.Teacher', on_delete=models.CASCADE, related_name='time_slots')
+    is_booked = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('day', 'start_time', 'teacher')
+        ordering = ['day', 'start_time']
+
+    def __str__(self):
+        if self.end_time:
+            return f"{self.get_day_display()} {self.get_start_time_display()} - {self.get_end_time_display()} - {self.lesson.title}"
+        return f"{self.get_day_display()} {self.get_start_time_display()} - {self.lesson.title}"
+
+    def save(self, *args, **kwargs):
+        """Override save to automatically calculate end_time based on lesson duration."""
+        if not self.end_time and self.lesson and self.lesson.estimated_completion_time:
+            # Calculate end time based on lesson duration
+            start_hour, start_minute = map(int, self.start_time.split(':'))
+            duration_minutes = self.lesson.estimated_completion_time
+            
+            # Calculate end time
+            total_minutes = start_hour * 60 + start_minute + duration_minutes
+            end_hour = total_minutes // 60
+            end_minute = total_minutes % 60
+            
+            # Format end time
+            self.end_time = f"{end_hour:02d}:{end_minute:02d}"
+        
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_all_time_slots(cls):
+        """Returns all possible time slots for the week."""
+        all_slots = []
+        for day, _ in cls.DAYS_OF_WEEK:
+            for time, _ in cls.TIME_SLOTS:
+                all_slots.append((day, time))
+        return all_slots
+
+    @classmethod
+    def get_booked_slots(cls, teacher=None):
+        """Returns all booked time slots, optionally filtered by teacher."""
+        query = cls.objects.filter(is_booked=True)
+        if teacher:
+            query = query.filter(teacher=teacher)
+        return query
+
+    @classmethod
+    def get_free_slots(cls, teacher=None):
+        """Returns all free time slots, optionally filtered by teacher."""
+        all_slots = set(cls.get_all_time_slots())
+        booked_slots = set(cls.get_booked_slots(teacher).values_list('day', 'start_time'))
+        return all_slots - booked_slots
+
 class Lesson(models.Model):
     """Represents a lesson within a unit."""
+    CLASS_TYPES = [
+        ('ONLINE', 'Online Class'),
+        ('PRERECORDED', 'Pre-recorded Video'),
+    ]
+    
     unit = models.ForeignKey('Unit', on_delete=models.CASCADE, related_name='lessons')
     title = models.CharField(max_length=255)
     description = models.TextField()
+    class_type = models.CharField(max_length=20, choices=CLASS_TYPES, default='PRERECORDED')
     content = HTMLField(blank=True, null=True)  # For rich text content
-    video_url = models.URLField(blank=True, null=True, help_text="URL to video content")
+    
+    # Online class specific fields
+    meeting_link = models.URLField(blank=True, null=True, help_text="Zoom or Google Meet link for online classes")
+    meeting_platform = models.CharField(max_length=20, choices=[
+        ('ZOOM', 'Zoom'),
+        ('GOOGLE_MEET', 'Google Meet'),
+        ('OTHER', 'Other')
+    ], blank=True, null=True)
+    start_time = models.DateTimeField(blank=True, null=True)
+    duration = models.PositiveIntegerField(help_text="Duration in minutes", blank=True, null=True)
+    
+    # Pre-recorded video specific fields
+    video_url = models.URLField(blank=True, null=True, help_text="URL to pre-recorded video content")
+    
+    # Common fields
     reading_materials = models.FileField(upload_to='lessons/materials/', blank=True, null=True, help_text="PDF or other reading materials")
     estimated_completion_time = models.PositiveIntegerField(help_text="Estimated time to complete this lesson in minutes")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    teacher = models.ForeignKey('accounts.Teacher', on_delete=models.SET_NULL, null=True, related_name='lessons')
 
     class Meta:
         ordering = ['created_at']
+
+    def get_timetable_slots(self):
+        """Returns all time slots for this lesson."""
+        return self.time_slots.all()
+
+    def get_status_display(self):
+        """Get the display status of the lesson."""
+        if self.class_type == 'PRERECORDED':
+            return 'Video Lesson'
+        elif self.is_upcoming():
+            return 'Upcoming Live Lesson'
+        elif self.is_ongoing():
+            return 'Live Lesson'
+        else:
+            return 'Ended'
 
     def get_completion_percentage(self, student):
         """Returns the completion percentage of the lesson for the given student."""
@@ -108,6 +227,38 @@ class Lesson(models.Model):
         except (ValueError, TypeError):
             # If the value is not an integer, return a default message
             return "Time not specified"
+
+    def is_upcoming(self):
+        """Check if the online class is upcoming."""
+        if self.class_type != 'ONLINE' or not self.start_time:
+            return False
+        return self.start_time > timezone.now()
+
+    def is_ongoing(self):
+        """Check if the online class is currently ongoing."""
+        if self.class_type != 'ONLINE' or not self.start_time or not self.duration:
+            return False
+        now = timezone.now()
+        end_time = self.start_time + timezone.timedelta(minutes=self.duration)
+        return self.start_time <= now <= end_time
+
+    def has_ended(self):
+        """Check if the online class has ended."""
+        if self.class_type != 'ONLINE' or not self.start_time or not self.duration:
+            return False
+        end_time = self.start_time + timezone.timedelta(minutes=self.duration)
+        return end_time < timezone.now()
+
+    def get_status(self):
+        """Get the current status of the lesson."""
+        if self.class_type == 'PRERECORDED':
+            return 'prerecorded'
+        elif self.is_upcoming():
+            return 'upcoming'
+        elif self.is_ongoing():
+            return 'ongoing'
+        else:
+            return 'ended'
 
     def __str__(self):
         return f"{self.title} - {self.unit.unit_name}"
@@ -222,3 +373,101 @@ class Unit(models.Model):
 
     def __str__(self):
         return f"{self.unit_name} ({self.unit_code})"
+
+class OnlineClass(models.Model):
+    """Represents an online class session."""
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='online_classes')
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    meeting_link = models.URLField(help_text="Zoom or Google Meet link")
+    meeting_platform = models.CharField(max_length=20, choices=[
+        ('ZOOM', 'Zoom'),
+        ('GOOGLE_MEET', 'Google Meet'),
+        ('OTHER', 'Other')
+    ])
+    start_time = models.DateTimeField()
+    duration = models.PositiveIntegerField(help_text="Duration in minutes")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-start_time']
+
+    def __str__(self):
+        return f"{self.title} - {self.unit.unit_name}"
+
+    def is_upcoming(self):
+        """Check if the class is upcoming."""
+        return self.start_time > timezone.now()
+
+    def is_ongoing(self):
+        """Check if the class is currently ongoing."""
+        now = timezone.now()
+        end_time = self.start_time + timezone.timedelta(minutes=self.duration)
+        return self.start_time <= now <= end_time
+
+    def has_ended(self):
+        """Check if the class has ended."""
+        end_time = self.start_time + timezone.timedelta(minutes=self.duration)
+        return end_time < timezone.now()
+
+    def get_status(self):
+        """Get the current status of the class."""
+        if self.is_upcoming():
+            return 'upcoming'
+        elif self.is_ongoing():
+            return 'ongoing'
+        else:
+            return 'ended'
+
+    def get_end_time(self):
+        """Get the end time of the class."""
+        return self.start_time + timezone.timedelta(minutes=self.duration)
+
+    def to_timetable_slot(self):
+        """Convert online class to timetable slot format."""
+        if not self.start_time:
+            return None
+            
+        class_day = self.start_time.strftime('%a').upper()[:3]
+        class_time = self.start_time.strftime('%H:%M')
+        
+        # Find the closest time slot
+        closest_time = None
+        for time_code, time_display in TimeSlot.TIME_SLOTS:
+            if time_code == class_time:
+                closest_time = time_code
+                break
+        
+        # If no exact match, find the closest time slot
+        if not closest_time:
+            class_hour = int(class_time.split(':')[0])
+            class_minute = int(class_time.split(':')[1])
+            
+            # Find the closest predefined time slot
+            min_diff = float('inf')
+            for time_code, time_display in TimeSlot.TIME_SLOTS:
+                slot_hour = int(time_code.split(':')[0])
+                slot_minute = int(time_code.split(':')[1])
+                
+                diff = abs((class_hour * 60 + class_minute) - (slot_hour * 60 + slot_minute))
+                if diff < min_diff:
+                    min_diff = diff
+                    closest_time = time_code
+        
+        # Create a mock TimeSlot object
+        class_slot = type('MockTimeSlot', (), {
+            'day': class_day,
+            'start_time': closest_time,
+            'lesson': type('MockLesson', (), {
+                'title': self.title,
+                'class_type': 'ONLINE',
+                'meeting_link': self.meeting_link,
+                'unit': self.unit,
+                'get_status_display': lambda: 'Online Class',
+                'get_class_type_display': lambda: 'Online Class'
+            })(),
+            'is_booked': True
+        })()
+        
+        return class_slot

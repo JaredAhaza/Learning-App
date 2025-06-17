@@ -3,20 +3,60 @@ const profileBtn = document.querySelector("#profile-btn");
 const themeToggler = document.querySelector(".theme-toggler");
 const nextDay = document.getElementById('nextDay');
 const prevDay = document.getElementById('prevDay');
+const navbar = document.querySelector("header .navbar");
 
-profileBtn.onclick = function() {
-    sideMenu.classList.toggle('active');
+// Only add event listener if profile button exists (mobile only)
+if (profileBtn) {
+    profileBtn.onclick = function() {
+        if (sideMenu) {
+            sideMenu.classList.toggle('active');
+        }
+        // Also toggle navbar on mobile
+        if (navbar) {
+            navbar.classList.toggle('active');
+        }
+    }
 }
+
+// Close aside and navbar when clicking outside on mobile
+document.addEventListener('click', function(event) {
+    if (sideMenu && sideMenu.classList.contains('active')) {
+        if (!sideMenu.contains(event.target) && !profileBtn.contains(event.target)) {
+            sideMenu.classList.remove('active');
+        }
+    }
+    
+    if (navbar && navbar.classList.contains('active')) {
+        if (!navbar.contains(event.target) && !profileBtn.contains(event.target)) {
+            navbar.classList.remove('active');
+        }
+    }
+});
+
 window.onscroll = () => {
-    sideMenu.classList.remove('active');
-    if(window.scrollY > 0){document.querySelector('header').classList.add('active');}
-    else{document.querySelector('header').classList.remove('active');}
+    if (sideMenu) {
+        sideMenu.classList.remove('active');
+    }
+    if(window.scrollY > 0){
+        const header = document.querySelector('header');
+        if (header) {
+            header.classList.add('active');
+        }
+    } else {
+        const header = document.querySelector('header');
+        if (header) {
+            header.classList.remove('active');
+        }
+    }
 }
 
-themeToggler.onclick = function() {
-    document.body.classList.toggle('dark-theme');
-    themeToggler.querySelector('span:nth-child(1)').classList.toggle('active')
-    themeToggler.querySelector('span:nth-child(2)').classList.toggle('active')
+if (themeToggler) {
+    themeToggler.onclick = function() {
+        document.body.classList.toggle('dark-theme');
+        
+        themeToggler.querySelector('span:nth-child(1)').classList.toggle('active');
+        themeToggler.querySelector('span:nth-child(2)').classList.toggle('active');
+    }
 }
 
 let setData = (day) =>{
@@ -66,3 +106,31 @@ prevDay.onclick = function() {
 
 setData(day); //To set the data in the table on loading window.
 document.querySelector('.timetable div h2').innerHTML = "Today's Timetable"; //To prevent overwriting the heading on loading;
+
+// Handle progress circles
+document.addEventListener('DOMContentLoaded', function() {
+    const progressCircles = document.querySelectorAll('circle[data-progress]');
+    progressCircles.forEach(function(circle) {
+        const progress = parseFloat(circle.getAttribute('data-progress'));
+        const strokeDashoffset = 226.08 - (226.08 * progress) / 100;
+        circle.style.strokeDashoffset = strokeDashoffset;
+    });
+    
+    // Add smooth scrolling for mobile
+    if (window.innerWidth <= 768) {
+        document.documentElement.style.scrollBehavior = 'smooth';
+    }
+});
+
+// Handle window resize
+window.addEventListener('resize', function() {
+    if (window.innerWidth > 768) {
+        // Reset mobile states on desktop
+        if (sideMenu) {
+            sideMenu.classList.remove('active');
+        }
+        if (navbar) {
+            navbar.classList.remove('active');
+        }
+    }
+});

@@ -28,15 +28,18 @@
                 <h3>Courses</h3>
             </a>
            
-                <a href="/manage_enrollment_request ">
-                    <span class="material-icons-sharp">assignment</span>
-                    <h3>Manage Requests</h3>
-                </a>
+                
            
             <a href="/update_teacher_profile">
                 <span class="material-icons-sharp">person</span>
-                <h3>Update Your Profile</h3>
+                <h3>Profile</h3>
             </a>           
+            <a href="{% url 'teacher_timetable' %}">
+                <span class="material-icons-sharp">today</span>
+                <h3>Time Table</h3>
+            </a>
+            
+            
             <a href="/teacher_logout">
                 <span class="material-icons-sharp" onclick="">logout</span>
                 <h3>Logout</h3>
@@ -56,15 +59,25 @@
             <div class="profile">
                 <div class="top">
                     <div class="profile-photo">
-                        {% if teacher_profile %}
+                        {% if teacher_profile and teacher_profile.profile_picture %}
                             <img src="{{ teacher_profile.profile_picture.url }}" alt="">
                         {% else %}
                             <img src="{% static 'dashboard/images/profile-1.jpg' %}" alt="">
                         {% endif %}
                     </div>
                     <div class="info">
-                        <p>Hey, <b>{{ teacher.user }}</b> </p>
-                        <small class="text-muted">{{ teacher.student_id }}</small>
+                        <p>Hey, <b>
+                            {% if teacher.user.first_name and teacher.user.last_name %}
+                                {{ teacher.user.first_name }} {{ teacher.user.last_name }}
+                            {% elif teacher.user.first_name %}
+                                {{ teacher.user.first_name }}
+                            {% elif teacher.user.username %}
+                                {{ teacher.user.username }}
+                            {% else %}
+                                Teacher
+                            {% endif %}
+                        </b> </p>
+                        <small class="text-muted">{{ teacher.student_id|default:"Teacher" }}</small>
                     </div>
                 </div>
                     <a href="/update_teacher_profile" style="display: block; width: 100%; background-color: #1567da;
@@ -72,15 +85,15 @@
                      margin-bottom: 16px;">Update Your Profile</a>
                 <div class="about">
                     <h5>DOB</h5>
-                    <p>{{ teacher_profile.date_of_birth }}</p>
+                    <p>{{ teacher_profile.date_of_birth|default:"Not set" }}</p>
                     <h5>Contact</h5>
-                    <p>{{ teacher_profile.phone_number }}</p>
+                    <p>{{ teacher_profile.phone_number|default:"Not set" }}</p>
                     <h5>Email</h5>
-                    <p>{{ teacher.email }}</p>
+                    <p>{{ teacher.email|default:"Not set" }}</p>
                     <h5>Bio</h5>
-                    <p>{{ teacher_profile.bio }}</p>
+                    <p>{{ teacher_profile.bio|default:"No bio available" }}</p>
                     <h5>Gender</h5>
-                    <p>{{ teacher_profile.gender }}</p>
+                    <p>{{ teacher_profile.gender|default:"Not set" }}</p>
                 </div>
             </div>
         </aside>

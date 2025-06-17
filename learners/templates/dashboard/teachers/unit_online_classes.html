@@ -1,0 +1,256 @@
+{% extends 'includes/teacherbase.html' %}
+{% load static %}
+
+{% block content %}
+<main>
+    <div class="container">
+        <h1>Online Classes - {{ unit.unit_name }}</h1>
+        
+        <!-- Add New Online Class Form -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Schedule New Online Class</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="{{ form.title.id_for_label }}">Title</label>
+                        {{ form.title }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.description.id_for_label }}">Description</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.meeting_platform.id_for_label }}">Platform</label>
+                        {{ form.meeting_platform }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.meeting_link.id_for_label }}">Meeting Link</label>
+                        {{ form.meeting_link }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.start_time.id_for_label }}">Start Time</label>
+                        {{ form.start_time }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.duration.id_for_label }}">Duration (minutes)</label>
+                        {{ form.duration }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Schedule Class</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Online Classes List -->
+        <div class="online-classes-list">
+            <h2>Scheduled Classes</h2>
+            {% if online_classes %}
+                {% for class in online_classes %}
+                    <div class="class-card">
+                        <div class="class-header">
+                            <h3>{{ class.title }}</h3>
+                            <span class="platform-badge {{ class.meeting_platform|lower }}">
+                                {{ class.get_meeting_platform_display }}
+                            </span>
+                        </div>
+                        <div class="class-details">
+                            <p class="description">{{ class.description }}</p>
+                            <div class="time-info">
+                                <p><strong>Start:</strong> {{ class.start_time|date:"M d, Y H:i" }}</p>
+                                <p><strong>Duration:</strong> {{ class.duration }} minutes</p>
+                                <p><strong>Status:</strong> 
+                                    <span class="status-badge {{ class.get_status }}">
+                                        {{ class.get_status|title }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="meeting-link">
+                                <a href="{{ class.meeting_link }}" target="_blank" class="btn btn-primary">
+                                    Join Meeting
+                                </a>
+                            </div>
+                        </div>
+                        <div class="class-actions">
+                            <button class="btn btn-danger delete-class" data-class-id="{{ class.id }}">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No online classes scheduled yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .card-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .online-classes-list {
+        margin-top: 30px;
+    }
+
+    .class-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+        padding: 20px;
+    }
+
+    .class-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .platform-badge {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8em;
+        font-weight: 500;
+    }
+
+    .platform-badge.zoom {
+        background: #2D8CFF;
+        color: white;
+    }
+
+    .platform-badge.google_meet {
+        background: #00897B;
+        color: white;
+    }
+
+    .platform-badge.other {
+        background: #757575;
+        color: white;
+    }
+
+    .status-badge {
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+    }
+
+    .status-badge.upcoming {
+        background: #E3F2FD;
+        color: #1976D2;
+    }
+
+    .status-badge.ongoing {
+        background: #E8F5E9;
+        color: #2E7D32;
+    }
+
+    .status-badge.ended {
+        background: #FFEBEE;
+        color: #C62828;
+    }
+
+    .class-details {
+        margin-bottom: 15px;
+    }
+
+    .time-info {
+        margin: 10px 0;
+    }
+
+    .class-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .btn-primary {
+        background: #1976D2;
+        color: white;
+    }
+
+    .btn-danger {
+        background: #C62828;
+        color: white;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle delete class buttons
+    document.querySelectorAll('.delete-class').forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete this online class?')) {
+                const classId = this.dataset.classId;
+                fetch(`/dashboard/online-class/${classId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.closest('.class-card').remove();
+                    } else {
+                        alert('Error deleting class: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the class.');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

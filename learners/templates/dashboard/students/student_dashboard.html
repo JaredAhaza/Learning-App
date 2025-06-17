@@ -1,5 +1,6 @@
 {% extends 'includes/base.html' %}
 {% load static %}
+{% load coursework_extras %}
 
 {% block content %}
 
@@ -47,11 +48,136 @@
     .progress .number p {
         margin: 0;
     }
+
+    .cohort-change-notification {
+        background-color: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 4px;
+    }
+
+    .cohort-change-notification h3 {
+        color: #1976d2;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .cohort-change-notification p {
+        margin: 0;
+        color: #424242;
+    }
+
+    /* Timetable Styles */
+    .timetable-container {
+        background: var(--color-white);
+        padding: var(--card-padding);
+        border-radius: var(--card-border-radius);
+        margin-top: 1rem;
+        box-shadow: var(--box-shadow);
+    }
+
+    .timetable-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .timetable-grid {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .timetable-grid th,
+    .timetable-grid td {
+        border: 1px solid var(--color-light);
+        padding: 0.5rem;
+        text-align: center;
+    }
+
+    .timetable-grid th {
+        background: var(--color-primary);
+        color: white;
+    }
+
+    .time-column {
+        font-weight: bold;
+        background: var(--color-light);
+    }
+
+    .timetable-cell {
+        min-height: 100px;
+        vertical-align: top;
+    }
+
+    .lesson-slot {
+        background: var(--color-primary);
+        color: white;
+        padding: 0.5rem;
+        border-radius: 4px;
+        margin: 0.25rem;
+    }
+
+    .lesson-slot.online {
+        background: var(--color-success);
+    }
+
+    .lesson-slot.prerecorded {
+        background: var(--color-warning);
+    }
+
+    .free-slot {
+        color: var(--color-dark);
+        opacity: 0.7;
+    }
+
+    .free-slot .material-icons-sharp {
+        font-size: 1.5rem;
+    }
+
+    .lesson-slot h4 {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .lesson-slot p {
+        margin: 0.25rem 0;
+        font-size: 0.8rem;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .status-badge.online {
+        background: var(--color-success);
+        color: white;
+    }
+
+    .status-badge.prerecorded {
+        background: var(--color-warning);
+        color: white;
+    }
 </style>
 
 <main>
     <h1>Welcome, {{ student.user.first_name }} {{ student.user.last_name }}</h1>
-    <h2>Assigned Cohort: {{ enrolled_cohort }}</h2>
+    
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'info cohort_change' %}
+                <div class="cohort-change-notification">
+                    <h3>Cohort Change Notice</h3>
+                    <p>{{ message }}</p>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <h2>Current Cohort: {{ enrolled_cohort }}</h2>
         <div class="subjects">
                 <!-- Pending Requests Section -->
             {% if pending_requests %}
@@ -109,7 +235,7 @@
                     <div class="progress">
                         <svg>
                             <circle cx="30" cy="30" r="30"></circle>
-                            <circle cx="30" cy="30" r="30" style="stroke-dashoffset: calc(226.08 - (226.08 * {{ unit_data.progress }}) / 100)"></circle>
+                            <circle cx="30" cy="30" r="30" data-progress="{{ unit_data.progress|floatformat:0 }}"></circle>
                         </svg>
                         <div class="number">
                             <p>{{ unit_data.progress|floatformat:0 }}%</p>
@@ -125,26 +251,107 @@
         <br>
     </div>
 
-    <div class="timetable" id="timetable">
-        <div>
-            <span id="prevDay">&lt;</span>
-            <h2>Today's Timetable</h2>
-            <span id="nextDay">&gt;</span>
+    <h1>Weekly Timetable</h1>
+    <div class="timetable-container">
+        <div class="timetable-controls">
+            <button id="prevWeek" class="btn btn-primary">&lt; Previous Week</button>
+            <h3 id="currentWeek">{{ current_week }}</h3>
+            <button id="nextWeek" class="btn btn-primary">Next Week &gt;</button>
         </div>
-        <span class="closeBtn" onclick="timeTableAll()">X</span>
-        <table>
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>Room No.</th>
-                    <th>Subject</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div class="timetable">
+            <table class="timetable-grid">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        {% for day in days_of_week %}
+                        <th>{{ day.1 }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for time_slot in time_slots %}
+                    <tr>
+                        <td class="time-column">{{ time_slot.1 }}</td>
+                        {% for day in days_of_week %}
+                        <td class="timetable-cell" data-day="{{ day.0 }}" data-time="{{ time_slot.0 }}">
+                            {% with slot=schedule|get_item:day.0|get_item:time_slot.0 %}
+                            {% if slot %}
+                                <div class="lesson-slot {% if slot.lesson.class_type == 'ONLINE' %}online{% else %}prerecorded{% endif %}">
+                                    <h4>{{ slot.lesson.title }}</h4>
+                                    {% if slot.lesson.class_type == 'ONLINE' %}
+                                    <a href="{{ slot.lesson.meeting_link }}" target="_blank" class="btn btn-sm btn-primary">Join Class</a>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="free-slot">
+                                    <span class="material-icons-sharp">event_available</span>
+                                    <p>Free</p>
+                                </div>
+                            {% endif %}
+                            {% endwith %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <h1>Today's Schedule</h1>
+    <div class="timetable-container">
+        <div class="timetable">
+            <table class="timetable-grid">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Lesson</th>
+                        <th>Unit</th>
+                        <th>Type</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slot in today_schedule %}
+                    <tr>
+                        <td class="time-column">{{ slot.get_start_time_display }}</td>
+                        <td>{{ slot.lesson.title }}</td>
+                        <td>{{ slot.lesson.unit.unit_name }}</td>
+                        <td>
+                            <span class="status-badge {% if slot.lesson.class_type == 'ONLINE' %}online{% else %}prerecorded{% endif %}">
+                                {{ slot.lesson.get_class_type_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if slot.lesson.class_type == 'ONLINE' %}
+                            <a href="{{ slot.lesson.meeting_link }}" target="_blank" class="btn btn-sm btn-primary">Join Class</a>
+                            {% else %}
+                            <a href="{% url 'student_lesson_view' slot.lesson.id %}" class="btn btn-sm btn-primary">View Lesson</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No classes scheduled for today.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </main>
+
+<script>
+// Handle progress circles
+document.addEventListener('DOMContentLoaded', function() {
+    const progressCircles = document.querySelectorAll('circle[data-progress]');
+    progressCircles.forEach(function(circle) {
+        const progress = parseFloat(circle.getAttribute('data-progress'));
+        const strokeDashoffset = 226.08 - (226.08 * progress) / 100;
+        circle.style.strokeDashoffset = strokeDashoffset;
+    });
+});
+</script>
 {% endblock %}
 
 

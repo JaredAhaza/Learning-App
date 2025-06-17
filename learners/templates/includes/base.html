@@ -27,7 +27,7 @@
                 <span class="material-icons-sharp">person</span>
                 <h3>Update Student Profile</h3>
             </a>
-            <a href="timetable.html" onclick="timeTableAll()">
+            <a href="{% url 'student_timetable' %}">
                 <span class="material-icons-sharp">today</span>
                 <h3>Time Table</h3>
             </a> 
@@ -54,15 +54,25 @@
             <div class="profile">
                 <div class="top">
                     <div class="profile-photo">
-                        {% if student_profile %}
+                        {% if student_profile and student_profile.profile_picture %}
                             <img src="{{ student_profile.profile_picture.url }}" alt="">
                         {% else %}
                             <img src="{% static 'dashboard/images/profile-1.jpg' %}" alt="">
                         {% endif %}
                     </div>
                     <div class="info">
-                        <p>Hey, <b>{{ student.user }}</b> </p>
-                        <small class="text-muted">{{ student.student_id }}</small>
+                        <p>Hey, <b>
+                            {% if student.user.first_name and student.user.last_name %}
+                                {{ student.user.first_name }} {{ student.user.last_name }}
+                            {% elif student.user.first_name %}
+                                {{ student.user.first_name }}
+                            {% elif student.user.username %}
+                                {{ student.user.username }}
+                            {% else %}
+                                Student
+                            {% endif %}
+                        </b> </p>
+                        <small class="text-muted">{{ student.student_id|default:"Student" }}</small>
                     </div>
                 </div>
                 <a href="/update_student_profile" 
@@ -73,21 +83,21 @@
                 </a>
                 <div class="about">
                     <h3>Current Enrollment</h3>
-                    <p>{{ enrolled_course.course_name }}</p>
+                    <p>{{ enrolled_course.course_name|default:"Not enrolled" }}</p>
                     <h5>Cohort</h5>
-                    <p>{{ enrolled_cohort.name }}</p>
+                    <p>{{ enrolled_cohort.name|default:"No cohort" }}</p>
                     <h5>Cohort Dates</h5>
-                    <p>{{ enrolled_cohort.start_date }} to {{ enrolled_cohort.end_date }}</p>
+                    <p>{% if enrolled_cohort %}{{ enrolled_cohort.start_date }} to {{ enrolled_cohort.end_date }}{% else %}N/A{% endif %}</p>
                     <h5>DOB</h5>
-                    <p>{{ student_profile.date_of_birth }}</p>
+                    <p>{{ student_profile.date_of_birth|default:"Not set" }}</p>
                     <h5>Contact</h5>
-                    <p>{{ student_profile.phone_number }}</p>
+                    <p>{{ student_profile.phone_number|default:"Not set" }}</p>
                     <h5>Email</h5>
-                    <p>{{ student.email }}</p>
+                    <p>{{ student.email|default:"Not set" }}</p>
                     <h5>Bio</h5>
-                    <p>{{ student_profile.bio }}</p>
+                    <p>{{ student_profile.bio|default:"No bio available" }}</p>
                     <h5>Gender</h5>
-                    <p>{{ student_profile.gender }}</p>
+                    <p>{{ student_profile.gender|default:"Not set" }}</p>
                 </div>
             </div>
         </aside>
@@ -143,6 +153,7 @@
     </div>
 </main>
 
+    
     <script src="{% static 'dashboard/timeTable.js' %}"></script>
     <script src="{% static 'dashboard/app.js' %}"></script>
 </body>
