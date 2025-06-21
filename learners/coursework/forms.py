@@ -70,3 +70,38 @@ class LessonForm(forms.ModelForm):
                 self.add_error('video_url', 'Video URL is required for pre-recorded lessons')
         
         return cleaned_data
+
+class QuizForm(forms.ModelForm):
+    class Meta:
+        model = Quiz
+        fields = ['name', 'desc', 'number_of_questions', 'time']
+
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ['question_content', 'question_type']
+
+class AnswerForm(forms.ModelForm):
+    class Meta:
+        model = Answer
+        fields = ['content', 'correct']
+
+class StudentQuizSubmissionForm(forms.ModelForm):
+    class Meta:
+        model = StudentQuizSubmission
+        fields = []  # No direct fields, handled in view
+
+class StudentAnswerForm(forms.ModelForm):
+    class Meta:
+        model = StudentAnswer
+        fields = ['selected_answer', 'text_answer']
+
+class ProjectForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ['title', 'description', 'due_date']
+
+class ProjectSubmissionForm(forms.ModelForm):
+    class Meta:
+        model = ProjectSubmission
+        fields = ['file', 'text']

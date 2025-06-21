@@ -1,0 +1,23 @@
+{% extends 'includes/base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Quiz Result: {{ submission.quiz.name }}</h2>
+  <p><strong>Score:</strong> {{ submission.score }}</p>
+  {% if submission.feedback %}
+    <p><strong>Feedback:</strong> {{ submission.feedback }}</p>
+  {% endif %}
+  <h4>Answers:</h4>
+  <ul>
+    {% for answer in submission.answers.all %}
+      <li>
+        <strong>{{ answer.question.question_content }}</strong><br>
+        {% if answer.question.question_type == 'EXPLAIN' %}
+          <em>Your answer:</em> {{ answer.text_answer }}
+        {% else %}
+          <em>Your answer:</em> {{ answer.selected_answer.content if answer.selected_answer else 'No answer' }}
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %} 

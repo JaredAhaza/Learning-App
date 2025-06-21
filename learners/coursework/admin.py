@@ -65,11 +65,57 @@ class LessonAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         return qs.select_related('unit', 'unit__cohort', 'teacher', 'teacher__user')
 
-class AnswerInLine(admin.TabularInline):
+class AnswerInline(admin.TabularInline):
     model = Answer
-    
+    extra = 1
+
+class QuestionInline(admin.TabularInline):
+    model = Question
+    extra = 1
+
+@admin.register(Quiz)
+class QuizAdmin(admin.ModelAdmin):
+    list_display = ('name', 'lesson', 'number_of_questions', 'time')
+    list_filter = ('lesson',)
+    search_fields = ('name', 'lesson__title')
+    inlines = [QuestionInline]
+
+@admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    inlines = [AnswerInLine]
+    list_display = ('question_content', 'quiz', 'question_type')
+    list_filter = ('quiz', 'question_type')
+    search_fields = ('question_content', 'quiz__name')
+    inlines = [AnswerInline]
+
+@admin.register(Answer)
+class AnswerAdmin(admin.ModelAdmin):
+    list_display = ('content', 'question', 'correct')
+    list_filter = ('correct', 'question__quiz')
+    search_fields = ('content', 'question__question_content')
+
+@admin.register(StudentQuizSubmission)
+class StudentQuizSubmissionAdmin(admin.ModelAdmin):
+    list_display = ('student', 'quiz', 'score', 'reviewed', 'submitted_at')
+    list_filter = ('reviewed', 'quiz')
+    search_fields = ('student__user__username', 'quiz__name')
+
+@admin.register(StudentAnswer)
+class StudentAnswerAdmin(admin.ModelAdmin):
+    list_display = ('submission', 'question', 'selected_answer', 'text_answer')
+    list_filter = ('question__quiz',)
+    search_fields = ('submission__student__user__username', 'question__question_content')
+
+@admin.register(Project)
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ('title', 'lesson', 'due_date')
+    list_filter = ('lesson', 'due_date')
+    search_fields = ('title', 'lesson__title')
+
+@admin.register(ProjectSubmission)
+class ProjectSubmissionAdmin(admin.ModelAdmin):
+    list_display = ('project', 'student', 'grade', 'reviewed', 'submitted_at')
+    list_filter = ('reviewed', 'project')
+    search_fields = ('student__user__username', 'project__title')
 
 class UnitInline(admin.TabularInline):
     model = Unit
@@ -137,30 +183,6 @@ class TopicAdmin(admin.ModelAdmin):
     list_display = ('title', 'lesson', 'content_type', 'created_at')
     list_filter = ('content_type', 'lesson')
     search_fields = ('title', 'lesson__title')
-
-@admin.register(Quiz)
-class QuizAdmin(admin.ModelAdmin):
-    list_display = ('name', 'topic', 'number_of_questions', 'time')
-    list_filter = ('topic',)
-    search_fields = ('name', 'topic__title')
-
-@admin.register(Question)
-class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('question_content', 'quiz')
-    list_filter = ('quiz',)
-    search_fields = ('question_content', 'quiz__name')
-
-@admin.register(Answer)
-class AnswerAdmin(admin.ModelAdmin):
-    list_display = ('content', 'question', 'correct')
-    list_filter = ('correct', 'question__quiz')
-    search_fields = ('content', 'question__question_content')
-
-@admin.register(Marks_Of_User)
-class MarksOfUserAdmin(admin.ModelAdmin):
-    list_display = ('quiz', 'user', 'score')
-    list_filter = ('quiz',)
-    search_fields = ('user__user__username', 'quiz__name')
 
 @admin.register(TopicProgress)
 class TopicProgressAdmin(admin.ModelAdmin):

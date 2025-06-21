@@ -291,54 +291,109 @@ class Topic(models.Model):
     def __str__(self):
         return self.title
 
-
 class Quiz(models.Model):
-    """Represents a quiz item (question and answers) associated with a topic."""
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    lesson = models.OneToOneField('Lesson', on_delete=models.CASCADE, related_name='quiz')
     name = models.CharField(max_length=50)
-    desc = models.CharField(max_length=500)    
+    desc = models.CharField(max_length=500)
     number_of_questions = models.IntegerField(default=1)
-    time = models.IntegerField(help_text="Duration of the quiz in seconds", default="1")
-    
+    time = models.IntegerField(help_text="Duration of the quiz in seconds", default=60)
+
     class Meta:
         verbose_name = 'Quiz'
         verbose_name_plural = 'Quizzes'
-        
-    def __str__(self):
-        return self.name
 
     def __str__(self):
-        return f"{self.topic.title} - {self.question}"
-    
+        return f"{self.lesson.title} - {self.name}"
+
     def get_questions(self):
-        return self.question_set.all()
-    
+        return self.questions.all()
+
+    def auto_mark(self, student_submission):
+        """Auto-mark MCQ and Yes/No questions, return score."""
+        score = 0
+        total = 0
+        for answer in student_submission.answers.all():
+            if answer.question.question_type in ['MCQ', 'YESNO']:
+                total += 1
+                if answer.selected_answer and answer.selected_answer.correct:
+                    score += 1
+        return score, total
+
 class Question(models.Model):
+    QUESTION_TYPES = [
+        ('MCQ', 'Multiple Choice'),
+        ('YESNO', 'Yes/No'),
+        ('EXPLAIN', 'Explanatory'),
+    ]
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')
     question_content = models.CharField(max_length=200)
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    
+    question_type = models.CharField(max_length=10, choices=QUESTION_TYPES, default='MCQ')
+
     def __str__(self):
-        return self.content
-    
+        return f"{self.question_content} ({self.get_question_type_display()})"
+
     def get_answers(self):
-        return self.answer_set.all()
-    
-    
+        return self.answers.all()
+
 class Answer(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
     content = models.CharField(max_length=200)
-    correct = models.BooleanField(default=False)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    
+    correct = models.BooleanField(default=False)  # Only for MCQ/YESNO
+
     def __str__(self):
-        return f"question: {self.question.content}, answer: {self.content}, correct: {self.correct}"
-    
-class Marks_Of_User(models.Model):
+        return f"{self.content} (Correct: {self.correct})"
+
+class StudentQuizSubmission(models.Model):
+    student = models.ForeignKey('accounts.StudentProfile', on_delete=models.CASCADE)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    user = models.ForeignKey('accounts.StudentProfile', on_delete=models.CASCADE)
-    score = models.FloatField()
-    
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    score = models.FloatField(null=True, blank=True)
+    reviewed = models.BooleanField(default=False)  # For explanatory/manual marking
+    feedback = models.TextField(blank=True, null=True)
+
     def __str__(self):
-        return f"{self.student.name} - {str(self.quiz)}"
+        return f"{self.student} - {self.quiz} ({'Reviewed' if self.reviewed else 'Pending'})"
+
+    def auto_mark(self):
+        score, total = self.quiz.auto_mark(self)
+        self.score = score
+        self.save()
+        return score, total
+
+    def needs_review(self):
+        return self.answers.filter(question__question_type='EXPLAIN').exists()
+
+class StudentAnswer(models.Model):
+    submission = models.ForeignKey(StudentQuizSubmission, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_answer = models.ForeignKey(Answer, null=True, blank=True, on_delete=models.SET_NULL)  # For MCQ/YESNO
+    text_answer = models.TextField(blank=True, null=True)  # For explanatory
+
+    def __str__(self):
+        return f"{self.submission.student} - {self.question}"
+
+# Project/Essay models
+class Project(models.Model):
+    lesson = models.ForeignKey('Lesson', on_delete=models.CASCADE, related_name='projects')
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    due_date = models.DateField()
+
+    def __str__(self):
+        return f"{self.title} ({self.lesson.title})"
+
+class ProjectSubmission(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    student = models.ForeignKey('accounts.StudentProfile', on_delete=models.CASCADE)
+    file = models.FileField(upload_to='projects/', blank=True, null=True)
+    text = models.TextField(blank=True, null=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    reviewed = models.BooleanField(default=False)
+    feedback = models.TextField(blank=True, null=True)
+    grade = models.FloatField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.student} - {self.project.title} ({'Reviewed' if self.reviewed else 'Pending'})"
 
 class TopicProgress(models.Model):
     """Represents a student's progress on a topic."""

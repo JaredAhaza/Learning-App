@@ -1,0 +1,16 @@
+{% extends 'includes/base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Explanatory Answers Pending Review</h2>
+  <ul>
+    {% for submission in submissions %}
+      <li>
+        {{ submission.student }} - {{ submission.quiz.name }}
+        <a href="{% url 'review_explanatory_detail' submission.id %}" class="btn btn-sm btn-primary">Review</a>
+      </li>
+    {% empty %}
+      <li>No submissions pending review.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %} 

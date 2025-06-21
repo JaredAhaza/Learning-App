@@ -132,6 +132,11 @@
                     Mark Lesson as Complete
                 {% endif %}
             </button>
+            {% if lesson.quiz %}
+                <a href="{% url 'take_quiz' lesson.id %}" class="btn btn-primary ms-2">
+                    <i class="material-icons-sharp">quiz</i> Take Quiz
+                </a>
+            {% endif %}
         </div>
 
         <div class="topics-section">
