@@ -95,7 +95,11 @@ def add_answer(request, question_id):
 def take_quiz(request, lesson_id):
     lesson = get_object_or_404(Lesson, id=lesson_id)
     quiz = get_object_or_404(Quiz, lesson=lesson)
-    student_profile = get_object_or_404(StudentProfile, user=request.user)
+    
+    # Get student first, then student profile
+    student = get_object_or_404(Student, user=request.user)
+    student_profile = get_object_or_404(StudentProfile, student=student)
+    
     if request.method == 'POST':
         submission = StudentQuizSubmission.objects.create(student=student_profile, quiz=quiz)
         for question in quiz.questions.all():
@@ -153,7 +157,11 @@ def create_project(request, lesson_id):
 @login_required
 def submit_project(request, project_id):
     project = get_object_or_404(Project, id=project_id)
-    student_profile = get_object_or_404(StudentProfile, user=request.user)
+    
+    # Get student first, then student profile
+    student = get_object_or_404(Student, user=request.user)
+    student_profile = get_object_or_404(StudentProfile, student=student)
+    
     if request.method == 'POST':
         form = ProjectSubmissionForm(request.POST, request.FILES)
         if form.is_valid():

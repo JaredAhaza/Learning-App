@@ -208,30 +208,30 @@ class Command(BaseCommand):
                     )
                     self.stdout.write(f'Created topic {topic.title} for lesson {lesson.title}')
 
-                    # Create quiz for each topic
-                    quiz = Quiz.objects.create(
-                        topic=topic,
-                        name=f'Quiz for Topic {j+1}',
-                        desc=f'Test your knowledge of Topic {j+1}',
-                        number_of_questions=5,
-                        time=300  # 5 minutes
-                    )
-                    self.stdout.write(f'Created quiz for topic {topic.title}')
+                # Create one quiz per lesson (not per topic)
+                quiz = Quiz.objects.create(
+                    lesson=lesson,
+                    name=f'Quiz for Lesson {lesson.title}',
+                    desc=f'Test your knowledge of {lesson.title}',
+                    number_of_questions=5,
+                    time=300  # 5 minutes
+                )
+                self.stdout.write(f'Created quiz for lesson {lesson.title}')
 
-                    # Create questions for each quiz
-                    for k in range(5):  # 5 questions per quiz
-                        question = Question.objects.create(
-                            quiz=quiz,
-                            question_content=f'Question {k+1} for Topic {j+1}'
+                # Create questions for each quiz
+                for k in range(5):  # 5 questions per quiz
+                    question = Question.objects.create(
+                        quiz=quiz,
+                        question_content=f'Question {k+1} for {lesson.title}'
+                    )
+                    # Create answers for each question
+                    for l in range(4):  # 4 answers per question
+                        Answer.objects.create(
+                            question=question,
+                            content=f'Answer {l+1} for Question {k+1}',
+                            correct=(l == 0)  # First answer is correct
                         )
-                        # Create answers for each question
-                        for l in range(4):  # 4 answers per question
-                            Answer.objects.create(
-                                question=question,
-                                content=f'Answer {l+1} for Question {k+1}',
-                                correct=(l == 0)  # First answer is correct
-                            )
-                        self.stdout.write(f'Created question {k+1} for quiz {quiz.name}')
+                    self.stdout.write(f'Created question {k+1} for quiz {quiz.name}')
 
         # Create online classes
         for unit in units:

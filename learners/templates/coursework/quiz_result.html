@@ -1,23 +1,130 @@
 {% extends 'includes/base.html' %}
 {% block content %}
 <div class="container mt-4">
-  <h2>Quiz Result: {{ submission.quiz.name }}</h2>
-  <p><strong>Score:</strong> {{ submission.score }}</p>
-  {% if submission.feedback %}
-    <p><strong>Feedback:</strong> {{ submission.feedback }}</p>
-  {% endif %}
-  <h4>Answers:</h4>
-  <ul>
-    {% for answer in submission.answers.all %}
-      <li>
-        <strong>{{ answer.question.question_content }}</strong><br>
-        {% if answer.question.question_type == 'EXPLAIN' %}
-          <em>Your answer:</em> {{ answer.text_answer }}
-        {% else %}
-          <em>Your answer:</em> {{ answer.selected_answer.content if answer.selected_answer else 'No answer' }}
-        {% endif %}
-      </li>
-    {% endfor %}
-  </ul>
+  <div class="card">
+    <div class="card-header bg-primary text-white">
+      <h2 class="mb-0">Quiz Result: {{ submission.quiz.name }}</h2>
+    </div>
+    <div class="card-body">
+      <!-- Score Summary -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <div class="card bg-light">
+            <div class="card-body text-center">
+              <h3 class="text-primary">
+                {% if submission.score %}
+                  {{ submission.score|floatformat:1 }}%
+                {% else %}
+                  Not graded yet
+                {% endif %}
+              </h3>
+              <p class="text-muted">Your Score</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card bg-light">
+            <div class="card-body text-center">
+              <h3 class="text-info">{{ submission.answers.count }}</h3>
+              <p class="text-muted">Questions Answered</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if submission.feedback %}
+        <div class="alert alert-info">
+          <strong>Feedback:</strong> {{ submission.feedback }}
+        </div>
+      {% endif %}
+
+      <!-- Detailed Answers -->
+      <h4 class="mb-3">Question Details:</h4>
+      <div class="accordion" id="answersAccordion">
+        {% for answer in submission.answers.all %}
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+              <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}">
+                <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                  <span><strong>Question {{ forloop.counter }}:</strong> {{ answer.question.question_content|truncatechars:50 }}</span>
+                  <span class="badge {% if answer.selected_answer and answer.selected_answer.correct %}bg-success{% elif answer.selected_answer and not answer.selected_answer.correct %}bg-danger{% else %}bg-warning{% endif %}">
+                    {% if answer.selected_answer and answer.selected_answer.correct %}
+                      ✓ Correct
+                    {% elif answer.selected_answer and not answer.selected_answer.correct %}
+                      ✗ Incorrect
+                    {% else %}
+                      ? No Answer
+                    {% endif %}
+                  </span>
+                </div>
+              </button>
+            </h2>
+            <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#answersAccordion">
+              <div class="accordion-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <h6>Your Answer:</h6>
+                    {% if answer.question.question_type == 'EXPLAIN' %}
+                      <div class="p-3 bg-light rounded">
+                        {% if answer.text_answer %}
+                          {{ answer.text_answer }}
+                        {% else %}
+                          <em class="text-muted">No answer provided</em>
+                        {% endif %}
+                      </div>
+                    {% else %}
+                      <div class="p-3 bg-light rounded">
+                        {% if answer.selected_answer %}
+                          {{ answer.selected_answer.content }}
+                        {% else %}
+                          <em class="text-muted">No answer selected</em>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-6">
+                    <h6>Correct Answer:</h6>
+                    {% if answer.question.question_type == 'EXPLAIN' %}
+                      <div class="p-3 bg-success bg-opacity-10 rounded">
+                        <em class="text-muted">Manual review required</em>
+                      </div>
+                    {% else %}
+                      <div class="p-3 bg-success bg-opacity-10 rounded">
+                        {% for correct_answer in answer.question.answers.all %}
+                          {% if correct_answer.correct %}
+                            {{ correct_answer.content }}
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Navigation -->
+      <div class="mt-4 text-center">
+        <a href="{% url 'student_lesson_view' submission.quiz.lesson.id %}" class="btn btn-primary">
+          <i class="fas fa-arrow-left"></i> Back to Lesson
+        </a>
+        <a href="{% url 'student_dashboard' %}" class="btn btn-secondary ms-2">
+          <i class="fas fa-home"></i> Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
 </div>
+
+<style>
+.accordion-button:not(.collapsed) {
+  background-color: #e7f1ff;
+  color: #0c63e4;
+}
+.accordion-button:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+</style>
 {% endblock %} 

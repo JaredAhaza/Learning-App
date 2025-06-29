@@ -404,7 +404,7 @@ class TopicProgress(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.student.name} - {self.topic.title}"
+        return f"{self.student.student.user.username} - {self.topic.title}"
 
 class QuizItemProgress(models.Model):
     """Represents a student's progress on a quiz item."""
@@ -415,7 +415,7 @@ class QuizItemProgress(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.student.name} - {self.quiz_item.topic.title} - {self.quiz_item.question}"
+        return f"{self.student.student.user.username} - {self.quiz_item.name}"
 
 class Unit(models.Model):
     unit_id = models.CharField(max_length=10, primary_key=True)

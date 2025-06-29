@@ -749,6 +749,10 @@ def unit_lessons(request, unit_id):
                 messages.error(request, 'You are not enrolled in this unit.')
                 return redirect('student_dashboard')
                 
+            # Get enrolled cohort and course for aside section
+            enrolled_cohort = enrollment.cohort
+            enrolled_course = enrolled_cohort.course if enrolled_cohort else None
+                
             # Get all lessons for this unit
             lessons = unit.lessons.all().order_by('created_at')
             
@@ -780,7 +784,9 @@ def unit_lessons(request, unit_id):
             'student': student,
             'student_profile': student_profile,
             'unit': unit,
-            'lesson_progress': lesson_progress
+            'lesson_progress': lesson_progress,
+            'enrolled_cohort': enrolled_cohort,
+            'enrolled_course': enrolled_course,
         }
         return render(request, 'dashboard/students/unit_lessons.html', context)
 
@@ -826,6 +832,10 @@ def student_lesson_view(request, lesson_id):
         if not enrollment:
             messages.error(request, 'You are not enrolled in this lesson.')
             return redirect('student_dashboard')
+        
+        # Get enrolled cohort and course for aside section
+        enrolled_cohort = enrollment.cohort
+        enrolled_course = enrolled_cohort.course if enrolled_cohort else None
             
         # Get or create lesson progress
         lesson_progress, created = LessonProgress.objects.get_or_create(
@@ -838,14 +848,21 @@ def student_lesson_view(request, lesson_id):
         topics = lesson.topic_set.all()
         topic_progress = []
         for topic in topics:
-            progress, created = TopicProgress.objects.get_or_create(
-                student=student,
-                topic=topic
-            )
-            topic_progress.append({
-                'topic': topic,
-                'progress': progress
-            })
+            if student_profile:  # Only create topic progress if student profile exists
+                progress, created = TopicProgress.objects.get_or_create(
+                    student=student_profile,
+                    topic=topic
+                )
+                topic_progress.append({
+                    'topic': topic,
+                    'progress': progress
+                })
+            else:
+                # If no student profile, create a placeholder progress object
+                topic_progress.append({
+                    'topic': topic,
+                    'progress': None
+                })
             
     except Student.DoesNotExist:
         return redirect('studentregister')
@@ -855,7 +872,9 @@ def student_lesson_view(request, lesson_id):
         'student_profile': student_profile,
         'lesson': lesson,
         'lesson_progress': lesson_progress,
-        'topic_progress': topic_progress
+        'topic_progress': topic_progress,
+        'enrolled_cohort': enrolled_cohort,
+        'enrolled_course': enrolled_course,
     }
     return render(request, 'dashboard/students/lesson_view.html', context)
 
@@ -947,12 +966,17 @@ def complete_lesson(request, lesson_id):
         # Mark all topics in this lesson as complete
         topics = lesson.topic_set.all()
         for topic in topics:
-            topic_progress, created = TopicProgress.objects.get_or_create(
-                student=student,
-                topic=topic
-            )
-            topic_progress.completed = True
-            topic_progress.save()
+            try:
+                student_profile = StudentProfile.objects.get(student=student)
+                topic_progress, created = TopicProgress.objects.get_or_create(
+                    student=student_profile,
+                    topic=topic
+                )
+                topic_progress.completed = True
+                topic_progress.save()
+            except StudentProfile.DoesNotExist:
+                # Skip topic progress if student profile doesn't exist
+                pass
         
         # Calculate unit progress
         unit = lesson.unit
@@ -1039,6 +1063,10 @@ def unit_online_classes(request, unit_id):
             if not enrollment:
                 messages.error(request, 'You are not enrolled in this unit.')
                 return redirect('student_dashboard')
+            
+            # Get enrolled cohort and course for aside section
+            enrolled_cohort = enrollment.cohort
+            enrolled_course = enrolled_cohort.course if enrolled_cohort else None
                 
             # Get all online classes for this unit
             online_classes = unit.online_classes.all().order_by('-start_time')
@@ -1050,7 +1078,9 @@ def unit_online_classes(request, unit_id):
             'student': student,
             'student_profile': student_profile,
             'unit': unit,
-            'online_classes': online_classes
+            'online_classes': online_classes,
+            'enrolled_cohort': enrolled_cohort,
+            'enrolled_course': enrolled_course,
         }
         return render(request, 'dashboard/students/unit_online_classes.html', context)
 
