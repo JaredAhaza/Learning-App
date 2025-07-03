@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
+from .views import LogoutView
 
 # Create a router and register our viewsets with it
 router = DefaultRouter()
@@ -45,5 +46,5 @@ urlpatterns = [
     path('teachers/<str:teacher_id>/lessons/', views.TeacherLessonsView.as_view(), name='api_teacher_lessons'),
     
     # Include router URLs
-    path('', include(router.urls)),
+    path('logout/', LogoutView.as_view(), name='api_logout'),
 ] 

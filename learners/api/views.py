@@ -7,6 +7,9 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
+from django.contrib.auth import login, logout
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 from accounts.models import Student, StudentProfile, Teacher, TeacherProfile
 from coursework.models import (
@@ -39,6 +42,7 @@ class LoginView(APIView):
         try:
             user = User.objects.get(username=username)
             if user.check_password(password):
+                login(request, user)
                 # Check if user is a student or teacher
                 try:
                     student = Student.objects.get(user=user)
@@ -507,3 +511,15 @@ class TeacherLessonsView(APIView):
             return Response(serializer.data)
         except Teacher.DoesNotExist:
             return Response({'error': 'Teacher not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class LogoutView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        logout(request)
+        response = Response({'success': 'Logged out successfully.'}, status=status.HTTP_200_OK)
+        response.delete_cookie('sessionid')
+        response.delete_cookie('csrftoken')
+        return response 
